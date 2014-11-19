@@ -84,6 +84,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
 	int64_t target_offset;
 	int condition;
 	/* I: */   condition = (r->reg[getRS(u)] > 0);
+
 	           target_offset = (int64_t)(getOffset(u) << 2);
 	//NextInstruction();
 	/* I+1: */ if (condition) {
@@ -109,7 +110,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
 	int condition;
 	/* I: */   condition = (r->reg[getRS(u)] < 0);
 	           target_offset = (int64_t)(getOffset(u) << 2);
-	//NextInstruction();
+	//NextInstruction(); 
 	/* I+1: */ if (condition) {
 			r->reg[32] = r->reg[32] + target_offset - 4;
 		   }

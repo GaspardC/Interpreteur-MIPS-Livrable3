@@ -35,18 +35,21 @@ loadcmd(interpreteur inter, mem * memory)
 	//compteur pour designer le d � �but de la prochaine section
 		char           *chaine = NULL;
 
-	if ((chaine = get_next_token(inter)) != NULL) {
+	if ((chaine = get_next_token(inter)) != NULL)
+	{
 
 		//mem memory;
 		stab		symtab = new_stab(0);
 		//table des symboles
 			FILE * pf_elf;
 
-		if ((pf_elf = fopen(chaine, "r")) == NULL) {
+		if ((pf_elf = fopen(chaine, "r")) == NULL)
+		{
 			INFO_MSG("cannot open file %s", chaine);
 			return CMD_UNKOWN_RETURN_VALUE;
 		}
-		if (!assert_elf_file(pf_elf)) {
+		if (!assert_elf_file(pf_elf))
+		{
 			ERROR_MSG("file %s is not an ELF file", chaine);
 			return CMD_UNKOWN_RETURN_VALUE;
 		}
@@ -63,8 +66,10 @@ loadcmd(interpreteur inter, mem * memory)
 
 		//Ne pas oublier d 'allouer les differentes sections
 			j = 0;
-		for (i = 0; i < NB_SECTIONS; i++) {
-			if (is_in_symbols(section_names[i], symtab)) {
+		for (i = 0; i < NB_SECTIONS; i++)
+		{
+			if (is_in_symbols(section_names[i], symtab))
+			{
 				elf_load_section_in_memory(pf_elf, *memory, section_names[i],
 						     segment_permissions[i],
 							next_segment_start);
@@ -95,26 +100,31 @@ dispcmd(interpreteur inter, registre r, mem memory)
 {
 	char           *token = NULL;
 
-
-	if (memory == NULL) {
+	if (memory == NULL)
+	{
 		WARNING_MSG("elf file required !!!\n");
 		return NO_ELF_LOAD;
 	}
-	if ((token = get_next_token(inter)) != NULL) {
+	if ((token = get_next_token(inter)) != NULL)
+	{
 
 		/*** MEMOIRE ***/
-		if (strcmp(token, "mem") == 0) {
+		if (strcmp(token, "mem") == 0)
+		{
 			int		c = 0;
-			while ((token = get_next_token(inter)) != NULL) {
+			while ((token = get_next_token(inter)) != NULL)
+			{
 
-				if (strcmp(token, "map") == 0 && c == 0) {
+				if (strcmp(token, "map") == 0 && c == 0)
+				{
 					//printf("\n------ Fichier ELF \"boucle.o\" : sections lues lors du chargement ------\n");
 					printf("Virtual memory map (%d segments)",
 					       memory->nseg);
 					print_mem(memory);
 					return CMD_OK_RETURN_VALUE;
 				}
-				switch (get_type(token)) {
+				switch (get_type(token))
+				{
 					int		a = 0;
 					int		b = 0;
 					char           *saveA;
@@ -128,50 +138,60 @@ dispcmd(interpreteur inter, registre r, mem memory)
 					//numero du segment
 						a = numero_segment(token, memory);
 
-					if (a == -1) {
+					if (a == -1)
+					{
 						WARNING_MSG("memoire virtuelle indisponible !!!");
 						return CMD_WRONG_ARG;
 					}
 					token = get_next_token(inter);
-					if (token == NULL) {
+					if (token == NULL)
+					{
 						WARNING_MSG("Utiliser la syntaxe 0x0000:0x0000");
 						return CMD_WRONG_ARG;
 					}
-					if (strcmp(token, ":") != 0) {
+					if (strcmp(token, ":") != 0)
+					{
 						WARNING_MSG("Mettre des deux points entre les valeurs des adresses en hexa");
 						return CMD_WRONG_ARG;
 					}
 					token = get_next_token(inter);
-					if (token == NULL) {
+					if (token == NULL)
+					{
 						WARNING_MSG("Utiliser la syntaxe 0x0000:0x0000");
 						return CMD_WRONG_ARG;
 					}
-					if (get_type(token) == HEXA) {
+					if (get_type(token) == HEXA)
+					{
 						saveB = token;
 						//numero du segment
 							b = numero_segment(token, memory);
-						if (b == -1) {
+						if (b == -1)
+						{
 							WARNING_MSG("memoire virtuelle indisponible !!!");
 							return CMD_WRONG_ARG;
 						}
-						if (b != a) {
+						if (b != a)
+						{
 							WARNING_MSG("Segment differents !!!");
 							return CMD_WRONG_ARG;
 						}
 						sscanf(saveA, "%x", &saveAI);
 						sscanf(saveB, "%x", &saveBI);
 
-						if (saveAI > saveBI) {
+						if (saveAI > saveBI)
+						{
 							WARNING_MSG("Plage d'adresse non conforme !!!");
 							return CMD_WRONG_ARG;
 						}
-						for (j = saveAI; j <= saveBI; j++) {
+						for (j = saveAI; j <= saveBI; j++)
+						{
 
 							if (j % 16 == 0)
 								printf("\n0x%08x  ", j);
 							printf("%02x ", *(memory->seg[a].content + (j - memory->seg[a].start._64)));
 						}
-					} else {
+					} else
+					{
 						WARNING_MSG("value \"%s\" is not a valid argument of command %s", token, "disp");
 						return 1;
 					}
@@ -185,13 +205,17 @@ dispcmd(interpreteur inter, registre r, mem memory)
 
 		}
 		/*** REGISTRE ***/
-		else if (strcmp(token, "reg") == 0) {
+		else if (strcmp(token, "reg") == 0)
+		{
 			int		c = 0;
 
-			while ((token = get_next_token(inter)) != NULL) {
-				if (strcmp(token, "all") == 0 && c == 0) {
+			while ((token = get_next_token(inter)) != NULL)
+			{
+				if (strcmp(token, "all") == 0 && c == 0)
+				{
 					int		i;
-					for (i = 0; i < 35; i++) {
+					for (i = 0; i < 35; i++)
+					{
 						c++;
 						printf("%s : %.8x\t", getName2(i),
 						    getRegisterValue(r, i));
@@ -201,7 +225,8 @@ dispcmd(interpreteur inter, registre r, mem memory)
 					printf("\n");
 					return CMD_OK_RETURN_VALUE;
 				}
-				switch (get_type(token)) {
+				switch (get_type(token))
+				{
 
 				case REGISTRE:
 
@@ -238,33 +263,40 @@ setcmd(interpreteur inter, registre r, mem memory)
 	char           *a = NULL;
 	char           *b = NULL;
 
-	if (memory == NULL) {
+	if (memory == NULL)
+	{
 		WARNING_MSG("elf file required !!!");
 		return CMD_WRONG_ARG;
 	}
 	token = get_next_token(inter);
-	if (token == NULL) {
+	if (token == NULL)
+	{
 		WARNING_MSG("Structure valide :\n\"set\" \"mem\" <type> <adresse> <valeur> \n\"set\" \"reg\" <registre> <valeur>");
 		return CMD_WRONG_ARG;
 	}
-	if (strcmp(token, "reg") != 0 && strcmp(token, "mem") != 0) {
+	if (strcmp(token, "reg") != 0 && strcmp(token, "mem") != 0)
+	{
 		WARNING_MSG("Structure valide :\n\"set\" \"reg\" <registre> <valeur>");
 		return CMD_WRONG_ARG;
 	}
-	if (strcmp(token, "reg") == 0) {
+	if (strcmp(token, "reg") == 0)
+	{
 
 		token = get_next_token(inter);
-		if (token == NULL) {
+		if (token == NULL)
+		{
 			WARNING_MSG("Structure valide :\n\"set\" \"reg\" <registre> <valeur>");
 			return CMD_WRONG_ARG;
 		}
-		switch (get_type(token)) {
+		switch (get_type(token))
+		{
 
 		case REGISTRE:
 
 			a = strdup(token);
 			token = get_next_token(inter);
-			if (token == NULL) {
+			if (token == NULL)
+			{
 				WARNING_MSG("Structure valide :\n\"set\" \"reg\" <registre> <valeur>");
 				return CMD_WRONG_ARG;
 			}
@@ -279,11 +311,13 @@ setcmd(interpreteur inter, registre r, mem memory)
 			break;
 		}
 	}
-	if (strcmp(token, "mem") == 0) {
+	if (strcmp(token, "mem") == 0)
+	{
 
 		token = get_next_token(inter);
 
-		if ((token) == NULL) {
+		if ((token) == NULL)
+		{
 			WARNING_MSG("Structure valide :\n\"set\" \"mem\" <type> <adresse> <valeur>");
 			return CMD_WRONG_ARG;
 		}
@@ -296,39 +330,46 @@ setcmd(interpreteur inter, registre r, mem memory)
 		//byte ou word
 
 
-			if ((strcmp(aa, "byte") != 0) && (strcmp(aa, "word") != 0)) {
+			if ((strcmp(aa, "byte") != 0) && (strcmp(aa, "word") != 0))
+		{
 			WARNING_MSG("Structure valide :\n\"set\" \"mem\" <type> <adresse> <valeur>");
 			return CMD_WRONG_ARG;
 		}
 		/*** byte ***/
-		if (strcmp(aa, "byte") == 0) {
+		if (strcmp(aa, "byte") == 0)
+		{
 
 			token = get_next_token(inter);
-			if ((token) == NULL) {
+			if ((token) == NULL)
+			{
 				WARNING_MSG("Structure valide :\n\"set\" \"mem\" <type> <adresse> <valeur>");
 				return CMD_WRONG_ARG;
 			}
 			//printf("token : %s\n", token);
-			if (get_type(token) != HEXA) {
+			if (get_type(token) != HEXA)
+			{
 				WARNING_MSG("adresse doit être donnée en hexa");
 				return CMD_WRONG_ARG;
 			}
 			sscanf(token, "%x", &bI);
 
 			n = numero_segment(token, memory);
-			if (n == -1) {
+			if (n == -1)
+			{
 				WARNING_MSG("memoire virtuelle indisponible !!!");
 				return CMD_WRONG_ARG;
 			}
 			token = get_next_token(inter);
 
-			if ((token) == NULL) {
+			if ((token) == NULL)
+			{
 				WARNING_MSG("Structure valide :\n\"set\" \"mem\" <type> <adresse> <valeur>");
 				return CMD_WRONG_ARG;
 			}
 			sscanf(token, "%x", &v);
 
-			if ((int)v > 256) {
+			if ((int)v > 256)
+			{
 				WARNING_MSG("your writed 'byte' but the value is a word");
 				return CMD_WRONG_ARG;
 			}
@@ -336,27 +377,32 @@ setcmd(interpreteur inter, registre r, mem memory)
 			return CMD_OK_RETURN_VALUE;
 		}
 		/*** word ***/
-		if (strcmp(aa, "word") == 0) {
+		if (strcmp(aa, "word") == 0)
+		{
 			token = get_next_token(inter);
 
-			if (token == NULL) {
+			if (token == NULL)
+			{
 				WARNING_MSG("Structure valide :\n\"set\" \"mem\" <type> <adresse> <valeur>");
 				return CMD_WRONG_ARG;
 			}
-			if (get_type(token) != HEXA) {
+			if (get_type(token) != HEXA)
+			{
 				WARNING_MSG("adresse doit être donnée en hexa");
 				return CMD_WRONG_ARG;
 			}
 			sscanf(token, "%x", &bI);
 
 			n = numero_segment(token, memory);
-			if (n == -1) {
+			if (n == -1)
+			{
 				WARNING_MSG("memoire virtuelle indisponible !!!");
 				return CMD_WRONG_ARG;
 			}
 			token = get_next_token(inter);
 
-			if (token == NULL) {
+			if (token == NULL)
+			{
 				WARNING_MSG("Structure valide :\n\"set\" \"mem\" <type> <adresse> <valeur>");
 				return CMD_WRONG_ARG;
 			}
@@ -397,31 +443,40 @@ assertcmd(interpreteur inter, registre r, mem memory)
 	//valeur
 		int		n;
 
-	if (memory == NULL) {
+	if (memory == NULL)
+	{
 		printf("load an elf file before\n");
 		return CMD_WRONG_ARG;
 	}
-	if (token == NULL) {
+	if (token == NULL)
+	{
 		WARNING_MSG("argument required\n");
 		return CMD_REQUIRE_ARG;
 	}
-	if (strcmp(token, "reg") == 0) {
-		if ((token = get_next_token(inter)) != NULL) {
-			switch (get_type(token)) {
+	if (strcmp(token, "reg") == 0)
+	{
+		if ((token = get_next_token(inter)) != NULL)
+		{
+			switch (get_type(token))
+			{
 
 			case REGISTRE:
 				a = getRegisterValue(r, convert(token));
-				if ((token = get_next_token(inter)) != NULL) {
+				if ((token = get_next_token(inter)) != NULL)
+				{
 
-					if (a == atoi(token)) {
+					if (a == atoi(token))
+					{
 						//***********------->PROBLEME ! !!Marche pour "assert reg $1 dhcsjd"
 							INFO_MSG("Valeurs identiques\n");
 						return 0;
-					} else {
+					} else
+					{
 						INFO_MSG("Valeurs differentes\n");
 						return 1;
 					}
-				} else {
+				} else
+				{
 					WARNING_MSG("argument required\n");
 					return CMD_REQUIRE_ARG;
 				}
@@ -432,20 +487,23 @@ assertcmd(interpreteur inter, registre r, mem memory)
 				return CMD_WRONG_ARG;
 				break;
 			}
-		} else {
+		} else
+		{
 			WARNING_MSG("argument required\n");
 			return CMD_REQUIRE_ARG;
 		}
 
 	}
-	if (strcmp(token, "byte") == 0) {
+	if (strcmp(token, "byte") == 0)
+	{
 
 		token = get_next_token(inter);
 
 		if (token == NULL)
 			return CMD_WRONG_ARG;
 		printf("token : %s\n", token);
-		if (get_type(token) != HEXA) {
+		if (get_type(token) != HEXA)
+		{
 			return CMD_WRONG_ARG;
 			DEBUG_MSG("pas hexa");
 		}
@@ -455,33 +513,39 @@ assertcmd(interpreteur inter, registre r, mem memory)
 			n = numero_segment(token, memory);
 		token = get_next_token(inter);
 
-		if ((token) == NULL) {
+		if ((token) == NULL)
+		{
 			DEBUG_MSG("pb");
 			return CMD_WRONG_ARG;
 		}
 		sscanf(token, "%x", &v);
 
-		if ((int)v > 256) {
+		if ((int)v > 256)
+		{
 			INFO_MSG("your writed 'byte' but the value is a word");
 			return CMD_WRONG_ARG;
 		}
-		if (v == *(memory->seg[n].content + (bI - memory->seg[n].start._64))) {
+		if (v == *(memory->seg[n].content + (bI - memory->seg[n].start._64)))
+		{
 			INFO_MSG("Ok");
 			return CMD_OK_RETURN_VALUE;
-		} else {
+		} else
+		{
 			DEBUG_MSG("pas egaux");
 			return CMD_WRONG_ARG;
 		}
 
 	}
-	if (strcmp(token, "word") == 0) {
+	if (strcmp(token, "word") == 0)
+	{
 
 		token = get_next_token(inter);
 
 		if (token == NULL)
 			return CMD_WRONG_ARG;
 		printf("token : %s\n", token);
-		if (get_type(token) != HEXA) {
+		if (get_type(token) != HEXA)
+		{
 			return CMD_WRONG_ARG;
 			DEBUG_MSG("pas hexa");
 		}
@@ -491,7 +555,8 @@ assertcmd(interpreteur inter, registre r, mem memory)
 			n = numero_segment(token, memory);
 		token = get_next_token(inter);
 
-		if ((token) == NULL) {
+		if ((token) == NULL)
+		{
 			DEBUG_MSG("pb");
 			return CMD_WRONG_ARG;
 		}
@@ -504,10 +569,12 @@ assertcmd(interpreteur inter, registre r, mem memory)
 		<< 8 |
 		(*(memory->seg[n].content + (bI + 3 - memory->seg[n].start._64)));
 		printf("%x\n", combined);
-		if (v == combined) {
+		if (v == combined)
+		{
 			INFO_MSG("Ok");
 			return CMD_OK_RETURN_VALUE;
-		} else {
+		} else
+		{
 			DEBUG_MSG("pas egaux");
 			return CMD_WRONG_ARG;
 		}
@@ -544,7 +611,8 @@ int
 disasmcmd(interpreteur inter, mem memory)
 {
 
-	if (memory == NULL) {
+	if (memory == NULL)
+	{
 		WARNING_MSG("elf file required");
 		return CMD_WRONG_ARG;
 	}
@@ -559,23 +627,28 @@ disasmcmd(interpreteur inter, mem memory)
 	int		i = 0;
 	int		combined;
 
-	if ((token = get_next_token(inter)) == NULL) {
+	if ((token = get_next_token(inter)) == NULL)
+	{
 		WARNING_MSG("Structure valide :\n \"disasm\" <plage>+");
 		return CMD_WRONG_ARG;
 	}
-	if (get_type(token) != HEXA) {
+	if (get_type(token) != HEXA)
+	{
 		WARNING_MSG("not hexa");
 		return CMD_WRONG_ARG;
 	}
 	addA = token;
 
-	if ((token = get_next_token(inter)) == NULL) {
+	if ((token = get_next_token(inter)) == NULL)
+	{
 		WARNING_MSG("Structure valide :\n \"disasm\" <plage>+");
 		return CMD_WRONG_ARG;
 	}
-	switch (get_type(token)) {
+	switch (get_type(token))
+	{
 	case PLUS:
-		if ((token = get_next_token(inter)) == NULL) {
+		if ((token = get_next_token(inter)) == NULL)
+		{
 			WARNING_MSG("Valeur requise");
 			return CMD_WRONG_ARG;
 		}
@@ -584,7 +657,8 @@ disasmcmd(interpreteur inter, mem memory)
 		sscanf(inc, "%x", &incI);
 		incI = incI - (incI % 4);
 		n = numero_segment(addA, memory);
-		if (n == -1) {
+		if (n == -1)
+		{
 			INFO_MSG("memory out of bonds");
 			return CMD_WRONG_ARG;
 		}
@@ -595,10 +669,12 @@ disasmcmd(interpreteur inter, mem memory)
 		 * if(numero_segment(s,memory)!=0) {DEBUG_MSG("out of .text");
 		 * return CMD_WRONG_ARG; }
 		 */
-		 
 
-		for (i = addAI; i < addAI + incI; i++) {
-			if (i % 4 == 0) {
+
+		for (i = addAI; i < addAI + incI; i++)
+		{
+			if (i % 4 == 0)
+			{
 
 				combined = (*(memory->seg[n].content + (i - memory->seg[n].start._64))) << 24 | (*(memory->seg[n].content + (i + 1 - memory->seg[n].start._64))) << 16 | (*(memory->seg[n].content + (i + 2 - memory->seg[n].start._64))) << 8 | (*(memory->seg[n].content + (i + 3 - memory->seg[n].start._64)));
 
@@ -610,7 +686,8 @@ disasmcmd(interpreteur inter, mem memory)
 		break;
 
 	case DEUXPOINTS:
-		if ((token = get_next_token(inter)) == NULL) {
+		if ((token = get_next_token(inter)) == NULL)
+		{
 			DEBUG_MSG("Erreur");
 			return CMD_WRONG_ARG;
 		}
@@ -621,20 +698,25 @@ disasmcmd(interpreteur inter, mem memory)
 		n = numero_segment(addA, memory);
 		m = numero_segment(addB, memory);
 
-		if (-1 == n) {
+		if (-1 == n)
+		{
 			WARNING_MSG("Mauvaise adresse %s", addA);
 			return CMD_WRONG_ARG;
 		}
-		if (-1 == m) {
+		if (-1 == m)
+		{
 			WARNING_MSG("Mauvaise adresse %s", addB);
 			return CMD_WRONG_ARG;
 		}
-		if (n != 0 || m != 0) {
+		if (n != 0 || m != 0)
+		{
 			DEBUG_MSG("adresse non dans .text");
 			return CMD_WRONG_ARG;
 		}
-		for (i = addAI; i <= addBI; i++) {
-			if (i % 4 == 0) {
+		for (i = addAI; i <= addBI; i++)
+		{
+			if (i % 4 == 0)
+			{
 				//une instruction tous les 4(= word de 32 bits)
 					combined = (*(memory->seg[n].content + (i - memory->seg[n].start._64))) << 24 | (*(memory->seg[n].content + (i + 1 -
 																		     memory->seg[n].start._64))) << 16 | (*(memory->seg[n].content + (i + 2 - memory->seg[n].start._64))) << 8 | (*(memory->seg[n].content + (i + 3 - memory->seg[n].start._64)));
@@ -669,12 +751,14 @@ numero_segment(char *chaine, mem memory)
 	//i = n numero de segment
 		// printf("%x\n", a);
 
-	for (i = 0; i < memory->nseg; i++) {
+	for (i = 0; i < memory->nseg; i++)
+	{
 		b = (uint32_t) memory->seg[i].start._64;
 		c = (uint32_t) memory->seg[i + 1].start._64;
 		//printf("BORNES SEG%x %x\n", b, c);
 
-		if (b <= a && a < c) {
+		if (b <= a && a < c)
+		{
 			return i;
 		}
 	}

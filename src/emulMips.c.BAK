@@ -1,7 +1,7 @@
 /**
  * @file emulMips.c
- * @author François Cayre, Nicolas Castagné, François Portet
- * @brief Main pour le début du projet émulateur MIPS.
+ * @author FranÃ§ois Cayre, Nicolas CastagnÃ©, FranÃ§ois Portet
+ * @brief Main pour le dÃ©but du projet Ã©mulateur MIPS.
  *
  */
 #include "registre.h"
@@ -22,7 +22,7 @@
 
 /**
  * allocation et init interpreteur
- * @return un pointeur vers une structure allouée dynamiquement
+ * @return un pointeur vers une structure allouÃ©e dynamiquement
  */
 interpreteur init_inter(void) {
     interpreteur inter = calloc(1,sizeof(*inter));
@@ -33,7 +33,7 @@ interpreteur init_inter(void) {
 
 /**
  * desallocation de l'interpreteur
- * @param inter le pointeur vers l'interpreteur à libérer
+ * @param inter le pointeur vers l'interpreteur Ã  libÃ©rer
  */
 void del_inter(interpreteur inter) {
     if (inter !=NULL)
@@ -42,9 +42,9 @@ void del_inter(interpreteur inter) {
 
 /**
  * return le prochain token de la chaine actuellement
- * analysée par l'interpreteur
+ * analysÃ©e par l'interpreteur
  * La fonction utilise une variable interne de l'interpreteur
- * pour gérer les premiers appels a strtok
+ * pour gÃ©rer les premiers appels a strtok
  * @inter le pointeur vers l'interpreteur
  * @return un pointeur vers le token ou NULL
  */
@@ -70,9 +70,9 @@ char* get_next_token(interpreteur inter) {
 
 /**
  * teste si un token est une valeur hexa
- * ATTENTION cette méthode n'est pas complete et ne fonctionnera pas dans tous les cas
+ * ATTENTION cette mÃ©thode n'est pas complete et ne fonctionnera pas dans tous les cas
  * essayer avec 0x567ZRT...
- *@param chaine le token à analyser
+ *@param chaine le token Ã  analyser
  *@return 0 si non-hexa, non null autrement
  */
 
@@ -133,8 +133,8 @@ char* itoa(int val, int base) {
 
 
 /**
- * retourne le type du token (fonction très incomplete)
- * @param chaine le token à analyser
+ * retourne le type du token (fonction trÃ¨s incomplete)
+ * @param chaine le token Ã  analyser
  * @return un entier correspondant au type du token
  *
  */
@@ -161,18 +161,18 @@ int get_type(char* chaine) {
 }
 
 /*************************************************************\
-Les commandes de l'émulateur.
+Les commandes de l'Ã©mulateur.
 
  Dans cette version, deux commandes :
 	"test" qui attend un nombre strictement positifs d'hexa strictement positifs et affiche ce(s) nombre() +1 dans le terminal
-	"exit" qui quitte l'émulateur
+	"exit" qui quitte l'Ã©mulateur
 
  \*************************************************************/
 
 /**
- * version de la commande test qui prend en entrée un hexa
+ * version de la commande test qui prend en entrÃ©e un hexa
  * la fonction verfiie si le nombre est >=0
- * @param hexValue la valeur à afficher
+ * @param hexValue la valeur Ã  afficher
  * @return 0 en case de succes, un nombre positif sinon
  */
 int _testcmd(int hexValue) {
@@ -187,10 +187,10 @@ int _testcmd(int hexValue) {
 
 
 /**
- * version de la commande test qui analyse la chaîne entrée à
- * l'interpreteur. Si la commande est correcte elle est executée.
+ * version de la commande test qui analyse la chaÃ®ne entrÃ©e Ã 
+ * l'interpreteur. Si la commande est correcte elle est executÃ©e.
  * Si la commande contient plusieurs parametres valides, elle
- * est excutée plusieurs fois.
+ * est excutÃ©e plusieurs fois.
  * @param inter l'interpreteur qui demande l'analyse
  * @return 0 en case de succes, un nombre positif sinon
  */
@@ -204,7 +204,7 @@ int testcmd(interpreteur inter) {
     int hexValue;
     char * token=NULL;
 
-    /* la boucle permet d'executer la commande de manière recurrente*/
+    /* la boucle permet d'executer la commande de maniÃ¨re recurrente*/
     /* i.e., tant qu'il y a un hexa on continue*/
     while((token = get_next_token(inter))!=NULL && return_value==0) {
         no_args=0;
@@ -242,7 +242,7 @@ int exitcmd(interpreteur inter) {
 
 
 /*************************************************************\
- Les deux fonctions principales de l'émulateur.
+ Les deux fonctions principales de l'Ã©mulateur.
 	execute_cmd: parse la commande et l'execute en appelant la bonne fonction C
 	acquire_line : recupere une ligne (donc une "commande") dans le flux
  \*************************************************************/
@@ -250,9 +250,9 @@ int exitcmd(interpreteur inter) {
 
 /**
 *
-* @brief parse la chaine courante de l'interpreteur à la recherche d'une commande, et execute cette commande.
+* @brief parse la chaine courante de l'interpreteur Ã  la recherche d'une commande, et execute cette commande.
 * @param inter l'interpreteur qui demande l'analyse
-* @return CMD_OK_RETURN_VALUE si la commande s'est exécutée avec succès (0)
+* @return CMD_OK_RETURN_VALUE si la commande s'est exÃ©cutÃ©e avec succÃ¨s (0)
 * @return CMD_EXIT_RETURN_VALUE si c'est la commande exit. Dans ce cas, le programme doit se terminer. (-1)
 * @return CMD_UNKOWN_RETURN_VALUE si la commande n'est pas reconnue. (-2)
 * @return tout autre nombre (eg tout nombre positif) si erreur d'execution de la commande
@@ -275,7 +275,7 @@ int execute_cmd(interpreteur inter, registre r,mem *memory) {
         return CMD_OK_RETURN_VALUE;
     }
 
-    /*on identifie la commande avec un premier appel à get_next_token*/
+    /*on identifie la commande avec un premier appel Ã  get_next_token*/
     char * token = get_next_token(inter);
 
     if(strcmp(token, "exit") == 0) {
@@ -440,10 +440,10 @@ int  acquire_line(FILE *fp, interpreteur inter) {
         add_history( chunk );
 
     }
-    // standardisation de la ligne d'entrée (on met des espaces là ou il faut)
+    // standardisation de la ligne d'entrÃ©e (on met des espaces lÃ  ou il faut)
     string_standardise(chunk, inter->input);
 
-    free( chunk ); // liberation de la mémoire allouée par la fonction readline() ou par calloc()
+    free( chunk ); // liberation de la mÃ©moire allouÃ©e par la fonction readline() ou par calloc()
 
     DEBUG_MSG("Ligne acquise '%s'\n", inter->input); /* macro DEBUG_MSG : uniquement si compil en mode DEBUG_MSG */
     return 0;
@@ -462,9 +462,9 @@ void usage_ERROR_MSG( char *command ) {
 int main ( int argc, char *argv[] ) {
     /* exemples d'utilisation des macros du fichier notify.h */
     INFO_MSG("Un message INFO_MSG : Debut du programme %s", argv[0]); /* macro INFO_MSG */
-    WARNING_MSG("Un message  Grand WARNING_MSG !"); /* macro INFO_MSG */
-    DEBUG_MSG("Un message  Grand DEBUG_MSG !"); /* macro DEBUG_MSG : uniquement si compil en mode DEBUG_MSG */
-    interpreteur inter=init_inter(); /* structure gardant les infos et états de l'interpreteur*/
+    WARNING_MSG("Un message WARNING_MSG !"); /* macro INFO_MSG */
+    DEBUG_MSG("Un message DEBUG_MSG !"); /* macro DEBUG_MSG : uniquement si compil en mode DEBUG_MSG */
+    interpreteur inter=init_inter(); /* structure gardant les infos et Ã©tats de l'interpreteur*/
     FILE *fp = NULL; /* le flux dans lequel les commande seront lues : stdin (mode shell) ou un fichier */
 
     registre r=NULL;
@@ -541,6 +541,6 @@ int main ( int argc, char *argv[] ) {
             exit(EXIT_SUCCESS);
         }
     }
-    /* tous les cas de sortie du programme sont gérés plus haut*/
+    /* tous les cas de sortie du programme sont gÃ©rÃ©s plus haut*/
     ERROR_MSG("SHOULD NEVER BE HERE\n");
 }

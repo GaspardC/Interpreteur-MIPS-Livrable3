@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdint.h>
 
-typedef uint32_t reg;
+typedef int32_t reg;
 
 // définition des registres
 typedef struct {
