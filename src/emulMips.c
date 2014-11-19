@@ -144,8 +144,9 @@ int get_type(char* chaine) {
     if (is_hexa(chaine))
         return HEXA; // HEXA ==1
 
-    if(convert(chaine)!=-1)
+    if(convert(chaine)!=-1){
         return REGISTRE;
+    }
 
     if(is_hexa(chaine))
         return ADD;
@@ -286,13 +287,11 @@ int execute_cmd(interpreteur inter, registre r,mem *memory) {
     }
     else if(strcmp(token, "test2") == 0) {
         // int i=0; //vaddr32 c=0;
-        char c[20];
+        char x[20];
+        strcpy( x, "$pc" );
+       
 
-        strcpy(c,"0x00003500");
-        printf("c %s\n",c );
-
-
-        printf("%d\n",numero_segment(c,*memory) );
+        printf("%d\n",convert(x));
 
 
         //  printf("memory %p\n", *memory );
@@ -343,6 +342,9 @@ int execute_cmd(interpreteur inter, registre r,mem *memory) {
 
     else if (strcmp(token,"disasm")==0) {
         return disasmcmd(inter,*memory);
+    }
+    else if (strcmp(token,"step")==0) {
+        return step(inter,r,*memory);
     }
 
     WARNING_MSG("Unknown Command : '%s'\n", cmdStr);
@@ -463,7 +465,7 @@ int main ( int argc, char *argv[] ) {
     /* exemples d'utilisation des macros du fichier notify.h */
     INFO_MSG("Un message INFO_MSG : Debut du programme %s", argv[0]); /* macro INFO_MSG */
     WARNING_MSG("Un message  WARNING_MSG !"); /* macro INFO_MSG */
-    DEBUG_MSG("Un message  Grand DEBUG_MSG !"); /* macro DEBUG_MSG : uniquement si compil en mode DEBUG_MSG */
+    DEBUG_MSG("Un message  DEBUG_MSG !"); /* macro DEBUG_MSG : uniquement si compil en mode DEBUG_MSG */
     interpreteur inter=init_inter(); /* structure gardant les infos et états de l'interpreteur*/
     FILE *fp = NULL; /* le flux dans lequel les commande seront lues : stdin (mode shell) ou un fichier */
 

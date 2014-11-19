@@ -466,7 +466,7 @@ void dispAssem(uint32_t u)
     else if(strcmp(instr,"SRA")==0) {
         printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRT(u)), getR(getSA(u)));
     }
-    else if(strcmp(instr,"SRA")==0) {
+    else if(strcmp(instr,"SRL")==0) {
         printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRT(u)), getR(getSA(u)));
     }
     else if(strcmp(instr,"SUB")==0) {

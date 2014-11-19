@@ -135,7 +135,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
     
     else if(strcmp(instr,"DIV")==0) {
         r->reg[34]=(int32_t)r->reg[getRS(u)] / (int32_t)r->reg[getRT(u)];
-        r->reg[34]=(int32_t)r->reg[getRS(u)] % (int32_t)r->reg[getRT(u)];
+        r->reg[33]=(int32_t)r->reg[getRS(u)] % (int32_t)r->reg[getRT(u)];
         return 0;
     }
     
@@ -150,35 +150,63 @@ int execute_asm(uint32_t u, registre r, mem memory)
     }
     else if(strcmp(instr,"JR")==0) {
         printf("%s %s\n",getInstr(u), getR(getRS(u)));
-    }
+    }*/
+    
     else if(strcmp(instr,"LB")==0) {
-        printf("%s %s, %d (%s)\n",getInstr(u), getR(getRT(u)), getOffset(u), getR(getRS(u)));
+        uint32_t vAddr = (int32_t)(getOffset(u))+r->reg[getRS(u)];
+	uint32_t byte = (int32_t)loadmem(vAddr, memory, "BYTE");
+	r->reg[getRT(u)] = byte;
+	return 0;
     }
+    
     else if(strcmp(instr,"LBU")==0) {
-        printf("%s %s, %d (%s)\n",getInstr(u), getR(getRT(u)), getOffset(u), getR(getRS(u)));
+        uint32_t vAddr = (int32_t)(getOffset(u))+r->reg[getRS(u)];
+	r->reg[getRT(u)] = loadmem(vAddr, memory, "BYTE");
+	return 0;
     }
+    
     else if(strcmp(instr,"LUI")==0) {
-        printf("%s %s, %d\n",getInstr(u), getR(getRT(u)), getIm(u));
+        r->reg[getRT(u)] = getIm(u)<<16;
+	return 0;
     }
+    
     else if(strcmp(instr,"LW")==0) {
-        printf("%s %s, %d(%s)\n",getInstr(u), getR(getRT(u)), getOffset(u), getR(getRS(u)));
+        uint32_t vAddr = (int32_t)(getOffset(u))+r->reg[getRS(u)];
+        if (getbits(vAddr,0,1) != 0) {
+		WARNING_MSG("Probleme d'adresse");
+		return 1;
+	}
+	int32_t word = loadmem(vAddr, memory, "WORD");
+	r->reg[getRT(u)] = word;
+	return 0;
+	
     }
     else if(strcmp(instr,"MFHI")==0) {
-        printf("%s %s\n",getInstr(u), getR(getRD(u)));
+        r->reg[getRD(u)] =  r->reg[33];
+	return 0;
     }
+    
     else if(strcmp(instr,"MFLO")==0) {
-        printf("%s %s\n",getInstr(u), getR(getRD(u)));
+        r->reg[getRD(u)] =  r->reg[34];
+	return 0;
     }
+    
     else if(strcmp(instr,"MULT")==0) {
-        printf("%s %s, %s\n",getInstr(u), getR(getRS(u)), getR(getRT(u)));
-    }*/
+        uint64_t prod=r->reg[getRS(u)]*r->reg[getRT(u)];
+        r->reg[34]=prod & 0x00000000FFFFFFFF;
+        r->reg[33]=(prod & 0xFFFFFFFF00000000)>>32;
+        return 0;
+    }
+    
     else if(strcmp(instr,"SLL")==0 && getRD(u)==0 && getRT(u)==0 && getSA(u)==0) {
         return 0;
     }
+    
     else if(strcmp(instr,"OR")==0) {
         r->reg[getRD(u)] =  r->reg[getRS(u)] | r->reg[getRT(u)];
 	return 0;
     }
+    
     else if(strcmp(instr,"ORI")==0) {
         r->reg[getRT(u)] =  r->reg[getRS(u)] | (int32_t)(getIm(u));
 	return 0;
@@ -207,7 +235,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
     else if(strcmp(instr,"SRA")==0) {
         printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRT(u)), getR(getSA(u)));
     }
-    else if(strcmp(instr,"SRA")==0) {
+    else if(strcmp(instr,"SRL")==0) {
         printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRT(u)), getR(getSA(u)));
     }
     else if(strcmp(instr,"SUB")==0) {
@@ -231,4 +259,35 @@ int execute_asm(uint32_t u, registre r, mem memory)
     	return 2;
     }
 
+}
+
+
+
+/* LOAD MEMORY */
+
+int loadmem(uint32_t vAddr, mem memory, char* type)
+{
+	if(memory==NULL)
+	{
+		WARNING_MSG("Memoire vide");
+		return 0;
+	}
+	
+	if(strcmp(type,"WORD")==0)
+	{
+		int n=0;
+		uint32_t combined=0;
+	
+			combined = (*(memory->seg[n].content + (vAddr - memory->seg[n].start._64))) << 24 | (*(memory->seg[n].content + (vAddr + 1 - memory->seg[n].start._64))) << 16 | (*(memory->seg[n].content + (vAddr + 2 - memory->seg[n].start._64))) << 8 | (*(memory->seg[n].content + (vAddr + 3 - memory->seg[n].start._64)));
+		
+		return combined;
+	}
+	if(strcmp(type,"BYTE")==0)
+	{
+		int n=0;
+		uint8_t combined=0;
+		combined = (*(memory->seg[n].content + (vAddr - memory->seg[n].start._64)));
+		return combined;
+	}
+	else return 0;
 }

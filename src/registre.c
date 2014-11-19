@@ -116,6 +116,12 @@ convert(char *regName)
 			return 33;
 		else if (strcmp(regName, "$34") == 0 || strcmp(regName, "$LO") == 0)
 			return 34;
+        else if (strcmp(regName, "$32") == 0 || strcmp(regName, "$pc") == 0)
+            return 32;
+        else if (strcmp(regName, "$33") == 0 || strcmp(regName, "$hi") == 0)
+            return 33;
+        else if (strcmp(regName, "$34") == 0 || strcmp(regName, "$lo") == 0)
+            return 34;
 		else
 			return -1;
 	} else

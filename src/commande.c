@@ -9,6 +9,7 @@
 #include "elf/elf.h"
 #include "elf/syms.h"
 #include "lib.h"
+#include "asm.h"
 
 #include <stdint.h>
 
@@ -237,7 +238,7 @@ setcmd(interpreteur inter, registre r, mem memory)
 	char           *token = NULL;
 	char           *a = NULL;
 	char           *b = NULL;
-
+	int			c=0;
 	if (memory == NULL) {
 		WARNING_MSG("elf file required !!!");
 		return CMD_WRONG_ARG;
@@ -260,6 +261,8 @@ setcmd(interpreteur inter, registre r, mem memory)
 		}
 		switch (get_type(token)) {
 
+
+
 		case REGISTRE:
 
 			a = strdup(token);
@@ -269,11 +272,13 @@ setcmd(interpreteur inter, registre r, mem memory)
 				return CMD_WRONG_ARG;
 			}
 			b = strdup(token);
-			setRegisterValue(r, convert(a), atoi(b));
+			sscanf(b, "%x", &c);
+			setRegisterValue(r, convert(a), c);
 			return CMD_OK_RETURN_VALUE;
 			break;
 
 		default:
+
 			WARNING_MSG("value %s is not a valid argument of command %s", token, "set");
 			return CMD_WRONG_ARG;
 			break;
@@ -659,11 +664,74 @@ disasmcmd(interpreteur inter, mem memory)
 	Fonction run
 \********************************************/
 
-/*int
-run(interpreteur inter, mem memory)
+
+/*int run(interpreteur inter,registre r mem memory)
 {
+	char           *token = NULL;
+	char *PC=NULL;
+
+PC=getRegisterValue(r,32);
+return CMD_OK_RETURN_VALUE;
+if(token==get_next_token(inter)==NULL) {token=PC;}
+
+token-=token%4;
+setRegisterValue(r,32,token);
+
+while(1){
+	execute_instr
+}
+
 
 }
+
+
+*/
+
+
+
+/********************************************\
+	Fonction step
+\********************************************/
+
+void step(interpreteur inter,registre r, mem memory){
+	int PC=0, n=0,a=0;
+	char type[10];
+	strcpy(type,"WORD");
+	PC=getRegisterValue(r,32); // adresse 
+	DEBUG_MSG("PC %08x",PC);
+
+
+	char hex[50];
+	sprintf(hex, "%x", PC);
+	DEBUG_MSG("PC %08x",PC);
+
+	n = numero_segment(hex, memory);
+		if (-1 == n) {
+			WARNING_MSG("Mauvaise adresse %s", hex);
+			return CMD_WRONG_ARG;
+		}
+
+
+
+	uint32_t u;
+	u=loadmem(PC,memory,type);
+	DEBUG_MSG("uint32_t %32x\n",u);
+	
+
+	 a=execute_asm(u, r,memory);
+	 PC+=4;
+
+	setRegisterValue(r, 2, int 10)
+	uint32_t v;
+	v=0x0000000c; // code syscall en hexa
+	execute_asm(v,r,memory);
+
+
+
+
+}
+
+
 /********************************************\
 	Fonction numero de segment
 \********************************************/

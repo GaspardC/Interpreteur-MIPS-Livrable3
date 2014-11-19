@@ -18,5 +18,5 @@
 #define BREAK 3
 
 int execute_asm(uint32_t u, registre r, mem memory);
-
+int loadmem(uint32_t vAdrr, mem memory, char* type);
 #endif

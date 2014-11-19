@@ -36,5 +36,6 @@ void debugcmd(interpreteur inter);
 void resumecmd(interpreteur inter);
 int numero_segment(char* chaine,mem memory);
 int disasmcmd(interpreteur inter, mem memory);
+void step(interpreteur inter,registre r, mem memory);
 
 #endif
