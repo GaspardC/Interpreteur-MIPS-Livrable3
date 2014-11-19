@@ -595,7 +595,7 @@ disasmcmd(interpreteur inter, mem memory)
 		 * if(numero_segment(s,memory)!=0) {DEBUG_MSG("out of .text");
 		 * return CMD_WRONG_ARG; }
 		 */
-		 
+
 
 		for (i = addAI; i < addAI + incI; i++) {
 			if (i % 4 == 0) {
@@ -655,7 +655,15 @@ disasmcmd(interpreteur inter, mem memory)
 	INFO_MSG("ni : ni + : respercter la syntaxe");
 	return CMD_WRONG_ARG;
 }
+/********************************************\
+	Fonction run
+\********************************************/
 
+/*int
+run(interpreteur inter, mem memory)
+{
+
+}
 /********************************************\
 	Fonction numero de segment
 \********************************************/
@@ -680,3 +688,6 @@ numero_segment(char *chaine, mem memory)
 	}
 	return -1;
 }
+
+
+
