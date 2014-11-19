@@ -139,18 +139,34 @@ int execute_asm(uint32_t u, registre r, mem memory)
         return 0;
     }
     
-    /*else if(strcmp(instr,"J")==0) {
-        printf("%s %d\n",getInstr(u), getTarget(u)<<2);
+    else if(strcmp(instr,"J")==0) {
+        /* I: */ 
+	//NextInstruction();
+	/* I+1: */ r->reg[32] = ((r->reg[32] & 0xF0000000)>>28) | (getTarget(u) << 2);
+	return 0;
     }
+    
     else if(strcmp(instr,"JAL")==0) {
-        printf("%s %d\n",getInstr(u), getTarget(u)<<2);
+        /* I: */r->reg[31]=r->reg[32]+8;
+	//NextInstruction();
+	/* I+1: */ r->reg[32] = ((r->reg[32] & 0xF0000000)>>28) | (getTarget(u) << 2);
+	return 0;
     }
+    
     else if(strcmp(instr,"JARL")==0) {
-        printf("%s %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRS(u)));
+        uint32_t temp;
+	/* I: */   temp = r->reg[getRS(u)];
+		   r->reg[getRD(u)] = r->reg[32] + 8;
+	//NextInstruction();
+	/* I+1: */ r->reg[32] = temp;
     }
+    
     else if(strcmp(instr,"JR")==0) {
-        printf("%s %s\n",getInstr(u), getR(getRS(u)));
-    }*/
+        uint32_t temp;
+	/* I: */   temp = r->reg[getRS(u)];
+	//NextInstruction();
+	/* I+1: */ r->reg[32] = temp;
+    }
     
     else if(strcmp(instr,"LB")==0) {
         uint32_t vAddr = (int32_t)(getOffset(u))+r->reg[getRS(u)];
@@ -277,9 +293,7 @@ int loadmem(uint32_t vAddr, mem memory, char* type)
 	{
 		int n=0;
 		uint32_t combined=0;
-	
-			combined = (*(memory->seg[n].content + (vAddr - memory->seg[n].start._64))) << 24 | (*(memory->seg[n].content + (vAddr + 1 - memory->seg[n].start._64))) << 16 | (*(memory->seg[n].content + (vAddr + 2 - memory->seg[n].start._64))) << 8 | (*(memory->seg[n].content + (vAddr + 3 - memory->seg[n].start._64)));
-		
+		combined = (*(memory->seg[n].content + (vAddr - memory->seg[n].start._64))) << 24 | (*(memory->seg[n].content + (vAddr + 1 - memory->seg[n].start._64))) << 16 | (*(memory->seg[n].content + (vAddr + 2 - memory->seg[n].start._64))) << 8 | (*(memory->seg[n].content + (vAddr + 3 - memory->seg[n].start._64)));
 		return combined;
 	}
 	if(strcmp(type,"BYTE")==0)
