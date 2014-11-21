@@ -5,8 +5,7 @@
 
 int execute_asm(uint32_t u, registre r, mem memory)
 {
-    char * instr = getInstr(u);  /*renvoi le nom de l'instruction*/
-    WARNING_MSG(" u %32x instr %s",u,instr);
+    char * instr = getInstr(u);  
     if(strcmp(instr,"ADD")==0) {
     	uint64_t temp=0;
 	temp  = ((uint64_t)getbits(r->reg[getRS(u)],31,31) << 32) | (uint64_t)r->reg[getRS(u)];
@@ -134,7 +133,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
         return BREAK;
     }
     
-    else if(strcmp(instr,"DIV")==0) { /*TODO regarder div par 0 si oui syscall exit*/
+    else if(strcmp(instr,"DIV")==0) {
         r->reg[34]=(int32_t)r->reg[getRS(u)] / (int32_t)r->reg[getRT(u)];
         r->reg[33]=(int32_t)r->reg[getRS(u)] % (int32_t)r->reg[getRT(u)];
         return 0;
