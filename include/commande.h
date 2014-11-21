@@ -5,15 +5,19 @@
 #include "commande.h"
 #include "emulMips.h"
 #include "mem.h"
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "common/bits.h"
 #include "common/notify.h"
 #include "elf/elf.h"
 #include "elf/syms.h"
 #include "mipself_test.h"
 #include "lib.h"
+#include "asm.h"
+
+#include <stdint.h>
+
 
 // On fixe ici une adresse basse dans la mémoire virtuelle. Le premier segment
 // ira se loger à cette adresse.
@@ -27,6 +31,14 @@
 #define DATA_SECTION_STR ".data"
 #define BSS_SECTION_STR ".bss"
 
+typedef struct bp_t{
+	struct bp_t *suiv;
+	int type;
+	vaddr addr;
+
+
+} *bp;
+
 
 int dispcmd(interpreteur inter,  registre r,mem memory); // ajouter vm virt en argument
 int setcmd(interpreteur inter,  registre r,mem memory);
@@ -36,6 +48,13 @@ void debugcmd(interpreteur inter);
 void resumecmd(interpreteur inter);
 int numero_segment(char* chaine,mem memory);
 int disasmcmd(interpreteur inter, mem memory);
-void step(interpreteur inter,registre r, mem memory);
+int step(interpreteur inter,registre r, mem memory);
+void run(interpreteur inter,registre r, mem memory, bp bp);
+int quit ( registre r, mem memory);
+int check_bp(bp breakpoint,uint32_t PC);
+int breakcmd(interpreteur inter, mem memory, bp bp);
+void free_list(bp);
+void free_bp(bp bp, char* token);
+void ajouter_en_tete(bp bp,char* token);
 
 #endif

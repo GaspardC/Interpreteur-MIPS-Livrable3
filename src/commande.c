@@ -600,9 +600,11 @@ disasmcmd(interpreteur inter, mem memory)
 		 * if(numero_segment(s,memory)!=0) {DEBUG_MSG("out of .text");
 		 * return CMD_WRONG_ARG; }
 		 */
+		 int u=0;
 
-
+		 u=memory->seg[n].size._32;
 		for (i = addAI; i < addAI + incI; i++) {
+			if(i-addAI>u){break;}
 			if (i % 4 == 0) {
 
 				combined = (*(memory->seg[n].content + (i - memory->seg[n].start._64))) << 24 | (*(memory->seg[n].content + (i + 1 - memory->seg[n].start._64))) << 16 | (*(memory->seg[n].content + (i + 2 - memory->seg[n].start._64))) << 8 | (*(memory->seg[n].content + (i + 3 - memory->seg[n].start._64)));
@@ -665,27 +667,48 @@ disasmcmd(interpreteur inter, mem memory)
 \********************************************/
 
 
-/*int run(interpreteur inter,registre r mem memory)
+void run(interpreteur inter,registre r, mem memory, bp bp)
 {
-	char           *token = NULL;
+	char *token = NULL;
+	uint32_t a=0;
 	char *PC=NULL;
 
-PC=getRegisterValue(r,32);
-return CMD_OK_RETURN_VALUE;
-if(token==get_next_token(inter)==NULL) {token=PC;}
+/*on charge l'adresse si elle est passé en argument et on vérifie qu'on commence à un mutliple de 4*/
+a=getRegisterValue(r,32);
+sscanf(PC,"%x",&a);
 
-token-=token%4;
-setRegisterValue(r,32,token);
+if((token=get_next_token(inter))!=NULL) {PC=token;
+									sscanf(PC,"%x",&a);}
+
+
+a-=a%4;
+
+setRegisterValue(r,32,a);
 
 while(1){
-	execute_instr
+
+	if(1==check_bp(bp,a)) {
+	printf("Breakpoint en %x \n", a);
+	break;}
+	step(inter,r,memory);
+
+}
+
+quit(r,memory);
+
+}
+
+int check_bp(bp breakpoint,uint32_t PC){
+
+	/* regarder longuer liste
+	initialiser a=0
+	pour 0 a longuer de la liste-1 regarder si breakpoint->Vaddr==PC si oui a=1 
+	puis on return a*/
+	return 1;
 }
 
 
-}
 
-
-*/
 
 
 
@@ -693,7 +716,7 @@ while(1){
 	Fonction step
 \********************************************/
 
-void step(interpreteur inter,registre r, mem memory){
+int step(interpreteur inter,registre r, mem memory){
 	int PC=0, n=0,a=0;
 	char type[10];
 	strcpy(type,"WORD");
@@ -720,24 +743,96 @@ void step(interpreteur inter,registre r, mem memory){
 
 	 a=execute_asm(u, r,memory);
 	 PC+=4;
+	 setRegisterValue(r, 32, PC);
 
-	setRegisterValue(r, 2, int 10)
-	uint32_t v;
-	v=0x0000000c; // code syscall en hexa
-	execute_asm(v,r,memory);
+	 // quit(r,memory); //sert a rien en fait ici ?
 
 
 
+
+
+
+
+	return CMD_OK_RETURN_VALUE;
 
 }
 
+int quit (registre r, mem memory){
+
+	uint32_t v;
+	v=0x0000000c; // code syscall en hexa
+	setRegisterValue(r, 2, 10);
+	execute_asm(v,r,memory); // TODO coder le retour proprement en prenant en compte le retrour de execute_asm et lib.c !
+
+	return CMD_OK_RETURN_VALUE;
+}
+
+int breakcmd(interpreteur inter, mem memory, bp bp) {
+	char* token=NULL;
+
+	if(bp==NULL){//creer liste}
+		}
+	token=get_next_token(inter);
+	if (token == NULL) {
+		WARNING_MSG("Structure valide :\n\" break\" \"add <adresse>+ or del <adresse>+ |all or list \n");
+		return CMD_WRONG_ARG;
+	}
+
+	if(0==strcmp(token,"add")){
+		while((token=get_next_token(inter))!=NULL){
+			ajouter_en_tete(bp,token);
+		}
+		return CMD_OK_RETURN_VALUE;
+	}
+	if(0==strcmp(token,"del")){
+		token=get_next_token(inter);
+
+		if (token == NULL) {
+		WARNING_MSG("Structure valide  del <adresse>+ |all \n");
+		return CMD_WRONG_ARG;
+			}
+
+		if(0==strcmp(token,"all")){
+			free_list(bp);
+		return CMD_OK_RETURN_VALUE;
+	}
+
+		if(get_type(token)==HEXA)
+		{	free_bp(bp,token);
+
+			do free_bp(bp,token);
+			while((token=get_next_token(inter))!=NULL && get_type(token)==HEXA);
+				
+				
+				
+			}
+			return CMD_OK_RETURN_VALUE;
+		}
+
+		
+	    
+
+
+	if(strcmp(token, "byte") == 00==strcmp(token,"list")) {
+		return CMD_OK_RETURN_VALUE;
+	}
+	return CMD_OK_RETURN_VALUE;
+
+}
+
+void free_bp(bp bp, char* token){
+
+}
+void free_list(bp bp){
+
+}
+void ajouter_en_tete(bp bp,char* token){}
 
 /********************************************\
 	Fonction numero de segment
 \********************************************/
 
-int
-numero_segment(char *chaine, mem memory)
+int numero_segment(char *chaine, mem memory)
 {
 	uint32_t	a = 0,	b = 0, c = 0;
 	sscanf(chaine, "%x", &a);
