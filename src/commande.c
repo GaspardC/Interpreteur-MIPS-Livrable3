@@ -806,7 +806,7 @@ int breakcmd(interpreteur inter, mem memory, bp * bpa) {
 	}
 
 		if(get_type(token)==HEXA)
-		{	free_bp(*bpa,token);
+		{	
 
 			do *bpa=free_bp(*bpa,token);
 			while((token=get_next_token(inter))!=NULL && get_type(token)==HEXA);
@@ -838,14 +838,23 @@ bp free_bp(bp bpa, char* token){
 
 	else if (bpa!=NULL){
 		
-		//DEBUG_MSG("bpa %p",bpa);
-		bp bpb=find_by_add(bpa,token);
-		if(bpb->suiv->suiv==NULL){ free(bpb->suiv);
-			return bpb;}
 		
-		free(bpb->suiv);
+		bp bpb=find_by_add(bpa,token); //renvoie celui d'avant
+		if(bpb==NULL){ DEBUG_MSG("liste vide"); return NULL;}
+		if(bpb->suiv==NULL && bpb!=NULL){
+			DEBUG_MSG("liste vide");
+			free(bpb);
+			return NULL;}
+
+		if(NULL==((bpb->suiv)->suiv) && bpb->suiv!=NULL){ 
+			free(bpb->suiv);
+			DEBUG_MSG("liste non vide");
+			return bpa;}
+		
 		bp bpc=bpb->suiv->suiv;
+		free(bpb->suiv);	
 		(bpb->suiv)=bpc;
+		//print_list(bpa);
 		return bpa;
 	}
 
@@ -854,20 +863,35 @@ bp find_by_add(bp bpa,char *token){
 	uint32_t a=0;
 	sscanf(token,"%x",&a);
 	bp bpb;
+	bpb=bpa;
 
-	while(bpa!=NULL){
-		DEBUG_MSG("bpa %p",bpa);
-
-		if(bpa->addr._32==a)
-		{return bpb;} //on revoie celui d'avant
-		bpb=bpa;
-		bpa=bpa->suiv;
-
-	}
 	if (bpa==NULL)
 	{
 		WARNING_MSG("no breakpoints to delete");
+		return NULL;
 	}
+	if(bpa->suiv==NULL)
+	{
+		WARNING_MSG("just 1 breakpoint");
+		return bpa;
+	}
+
+	while(bpb->suiv!=NULL){
+
+		if((bpb->suiv)->addr._32==a)
+		{	
+			DEBUG_MSG("add delete %32.x",(bpb->suiv)->addr._32);
+			return bpb;
+			
+		} //on revoie celui d'avant
+		bpb=bpb->suiv;
+
+	}
+	bp newbp=NULL;
+	newbp=malloc(sizeof(*newbp));
+	newbp->suiv=bpa;
+	return newbp;
+	
 }
 bp free_list(bp bpa){
 
