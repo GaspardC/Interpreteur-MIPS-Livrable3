@@ -258,7 +258,7 @@ int exitcmd(interpreteur inter) {
 * @return CMD_UNKOWN_RETURN_VALUE si la commande n'est pas reconnue. (-2)
 * @return tout autre nombre (eg tout nombre positif) si erreur d'execution de la commande
 */
-int execute_cmd(interpreteur inter, registre r,mem *memory) {
+int execute_cmd(interpreteur inter, registre r,mem *memory,bp * bpa) {
     DEBUG_MSG("input '%s'", inter->input);
     char cmdStr[MAX_STR];
 
@@ -345,6 +345,11 @@ int execute_cmd(interpreteur inter, registre r,mem *memory) {
     }
     else if (strcmp(token,"step")==0) {
         return step(inter,r,*memory);
+    }
+    else if (strcmp(token,"break")==0) {
+        breakcmd(inter,*memory, bpa);
+        DEBUG_MSG("bpa apres break dans emulMips.c %p",*bpa); 
+        return CMD_OK_RETURN_VALUE;
     }
 
     WARNING_MSG("Unknown Command : '%s'\n", cmdStr);
@@ -470,6 +475,7 @@ int main ( int argc, char *argv[] ) {
     registre r=NULL;
     r = registre_new(35);
     mem memory = NULL;
+ 
 
     if ( argc > 2 ) {
         usage_ERROR_MSG( argv[0] );
@@ -493,6 +499,10 @@ int main ( int argc, char *argv[] ) {
         inter->mode = SCRIPT;
     }
 
+    
+     bp bpi=NULL;
+ 
+
     /* boucle infinie : lit puis execute une cmd en boucle */
     while ( 1 ) {
 
@@ -501,7 +511,7 @@ int main ( int argc, char *argv[] ) {
         if (acquire_line( fp,  inter)  == 0 ) {
             /* Une nouvelle ligne a ete acquise dans le flux fp*/
 
-            int res = execute_cmd(inter,r,&memory); /* execution de la commande */
+            int res = execute_cmd(inter,r,&memory,&bpi); /* execution de la commande */
 
             // traitement des erreurs
             switch(res) {

@@ -767,11 +767,9 @@ int quit (registre r, mem memory){
 	return CMD_OK_RETURN_VALUE;
 }
 
-int breakcmd(interpreteur inter, mem memory, bp bp) {
+int breakcmd(interpreteur inter, mem memory, bp * bpa) {
 	char* token=NULL;
 
-	if(bp==NULL){//creer liste}
-		}
 	token=get_next_token(inter);
 	if (token == NULL) {
 		WARNING_MSG("Structure valide :\n\" break\" \"add <adresse>+ or del <adresse>+ |all or list \n");
@@ -780,7 +778,8 @@ int breakcmd(interpreteur inter, mem memory, bp bp) {
 
 	if(0==strcmp(token,"add")){
 		while((token=get_next_token(inter))!=NULL){
-			ajouter_en_tete(bp,token);
+			*bpa=ajouter_en_tete(*bpa,token);
+			
 		}
 		return CMD_OK_RETURN_VALUE;
 	}
@@ -793,14 +792,14 @@ int breakcmd(interpreteur inter, mem memory, bp bp) {
 			}
 
 		if(0==strcmp(token,"all")){
-			free_list(bp);
+			free_list(*bpa);
 		return CMD_OK_RETURN_VALUE;
 	}
 
 		if(get_type(token)==HEXA)
-		{	free_bp(bp,token);
+		{	free_bp(*bpa,token);
 
-			do free_bp(bp,token);
+			do free_bp(*bpa,token);
 			while((token=get_next_token(inter))!=NULL && get_type(token)==HEXA);
 				
 				
@@ -812,21 +811,76 @@ int breakcmd(interpreteur inter, mem memory, bp bp) {
 		
 	    
 
+	if(*bpa==NULL){
+		DEBUG_MSG("liste break point vide");
+		}
 
-	if(strcmp(token, "byte") == 00==strcmp(token,"list")) {
+	if(0==strcmp(token,"list")) {
+		print_list(*bpa);
 		return CMD_OK_RETURN_VALUE;
 	}
 	return CMD_OK_RETURN_VALUE;
 
 }
 
-void free_bp(bp bp, char* token){
+bp free_bp(bp bpa, char* token){
+
+		if(bpa==NULL){return NULL;}
+
+	else if (bpa!=NULL){
+		
+		bp bpb=find_by_add(bpa,token);
+		bp bpc=bpb->suiv->suiv;
+		free(bpb->suiv);
+		(bpb->suiv)=bpc;
+		return bpa;
+	}
 
 }
-void free_list(bp bp){
+bp find_by_add(bp bpa,char *token){
+	uint32_t a=0;
+	sscanf(token,"%x",&a);
+	bp bpb=bpa;
+	while(bpb!=NULL){
+		if((bpb->suiv)->addr._32==a){return bpb;} //on revoie celui d'avant
+		bpb=bpb->suiv;
+	}
+}
+void free_list(bp bpa){
+
+	
+	while(bpa!=NULL){
+		bp bpb=bpa;
+		free(bpa);
+		bpa=bpb->suiv;
+	}
 
 }
-void ajouter_en_tete(bp bp,char* token){}
+
+bp ajouter_en_tete(bp bp0,char* token){
+
+	DEBUG_MSG("bpo %p token %s",bp0,token);
+	uint32_t a=0;
+	sscanf(token,"%x",&a);
+	bp newbp =calloc(1,sizeof(uint32_t));
+	
+	newbp->addr._32=a;
+	newbp->suiv=bp0;
+	DEBUG_MSG("ajout breakpoint %x nouveau bp vaut %p",newbp->addr._32,newbp);
+	return newbp;
+
+}
+void print_list(bp bp0){
+
+	bp bpp=bp0;
+
+	while(bpp!=NULL){
+		DEBUG_MSG("bpp %p bpp->addr._32 %x",bpp,bpp->addr._32);
+		printf("%x\n",(bpp->addr)._32 );
+		bpp=bpp->suiv;
+	}
+
+}
 
 /********************************************\
 	Fonction numero de segment
