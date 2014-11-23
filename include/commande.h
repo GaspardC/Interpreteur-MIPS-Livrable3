@@ -2,7 +2,7 @@
 #define COMMANDE_H
 
 #include "registre.h"
-#include "commande.h"
+
 #include "emulMips.h"
 #include "mem.h"
 #include <stdio.h>
@@ -46,7 +46,7 @@ void run(interpreteur inter,registre r, mem memory, bp bp);
 int quit ( registre r, mem memory);
 int check_bp(bp breakpoint,uint32_t PC);
 int breakcmd(interpreteur inter, mem memory, bp *bp0);
-void free_list(bp);
+bp free_list(bp bp);
 bp free_bp(bp bp, char* token);
 bp ajouter_en_tete(bp bp,char* token);
 void print_list(bp bp0);

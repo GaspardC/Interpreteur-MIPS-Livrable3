@@ -780,6 +780,12 @@ int breakcmd(interpreteur inter, mem memory, bp * bpa) {
 		while((token=get_next_token(inter))!=NULL){
 			*bpa=ajouter_en_tete(*bpa,token);
 			
+			bp bpb = *bpa;
+			/*
+			while((bpb)->suiv!=NULL){
+				DEBUG_MSG("*bpa suiv %p vaut %.32x",(*bpa)->suiv,(*bpa)->suiv->addr._32);
+				bpb=bpb->suiv;}
+			*/
 		}
 		return CMD_OK_RETURN_VALUE;
 	}
@@ -792,14 +798,17 @@ int breakcmd(interpreteur inter, mem memory, bp * bpa) {
 			}
 
 		if(0==strcmp(token,"all")){
-			free_list(*bpa);
+			/*DEBUG_MSG("free_list avant *bpa %p",*bpa);*/
+			*bpa=free_list(*bpa);
+			/*DEBUG_MSG("free_list apres *bpa %p",*bpa);*/
+
 		return CMD_OK_RETURN_VALUE;
 	}
 
 		if(get_type(token)==HEXA)
 		{	free_bp(*bpa,token);
 
-			do free_bp(*bpa,token);
+			do *bpa=free_bp(*bpa,token);
 			while((token=get_next_token(inter))!=NULL && get_type(token)==HEXA);
 				
 				
@@ -829,9 +838,13 @@ bp free_bp(bp bpa, char* token){
 
 	else if (bpa!=NULL){
 		
+		//DEBUG_MSG("bpa %p",bpa);
 		bp bpb=find_by_add(bpa,token);
-		bp bpc=bpb->suiv->suiv;
+		if(bpb->suiv->suiv==NULL){ free(bpb->suiv);
+			return bpb;}
+		
 		free(bpb->suiv);
+		bp bpc=bpb->suiv->suiv;
 		(bpb->suiv)=bpc;
 		return bpa;
 	}
@@ -840,42 +853,59 @@ bp free_bp(bp bpa, char* token){
 bp find_by_add(bp bpa,char *token){
 	uint32_t a=0;
 	sscanf(token,"%x",&a);
-	bp bpb=bpa;
-	while(bpb!=NULL){
-		if((bpb->suiv)->addr._32==a){return bpb;} //on revoie celui d'avant
-		bpb=bpb->suiv;
+	bp bpb;
+
+	while(bpa!=NULL){
+		DEBUG_MSG("bpa %p",bpa);
+
+		if(bpa->addr._32==a)
+		{return bpb;} //on revoie celui d'avant
+		bpb=bpa;
+		bpa=bpa->suiv;
+
+	}
+	if (bpa==NULL)
+	{
+		WARNING_MSG("no breakpoints to delete");
 	}
 }
-void free_list(bp bpa){
+bp free_list(bp bpa){
 
 	
 	while(bpa!=NULL){
+		DEBUG_MSG("bpa %p",bpa);
 		bp bpb=bpa;
 		free(bpa);
 		bpa=bpb->suiv;
+		
 	}
+	return NULL;
 
 }
 
 bp ajouter_en_tete(bp bp0,char* token){
 
-	DEBUG_MSG("bpo %p token %s",bp0,token);
-	uint32_t a=0;
-	sscanf(token,"%x",&a);
-	bp newbp =calloc(1,sizeof(uint32_t));
-	
-	newbp->addr._32=a;
-	newbp->suiv=bp0;
-	DEBUG_MSG("ajout breakpoint %x nouveau bp vaut %p",newbp->addr._32,newbp);
+
+       unsigned int a=0;
+       sscanf(token,"%x",&a);
+       bp newbp =  calloc(1,sizeof(*newbp));
+
+       newbp->addr._32=a;
+       newbp->suiv=bp0;
+       /*DEBUG_MSG("ajout breakpoint %p nouveau  vaut %x",newbp,newbp->addr._32);
+       if(bp0!=NULL){
+       DEBUG_MSG("previous breakpoint %p vaut %x",bp0,(bp0->addr)._32);} */
+
 	return newbp;
 
 }
+
+
 void print_list(bp bp0){
 
 	bp bpp=bp0;
 
 	while(bpp!=NULL){
-		DEBUG_MSG("bpp %p bpp->addr._32 %x",bpp,bpp->addr._32);
 		printf("%x\n",(bpp->addr)._32 );
 		bpp=bpp->suiv;
 	}

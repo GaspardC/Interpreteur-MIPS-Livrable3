@@ -348,7 +348,7 @@ int execute_cmd(interpreteur inter, registre r,mem *memory,bp * bpa) {
     }
     else if (strcmp(token,"break")==0) {
         breakcmd(inter,*memory, bpa);
-        DEBUG_MSG("bpa apres break dans emulMips.c %p",*bpa); 
+       // DEBUG_MSG("bpa apres break dans emulMips.c %p",*bpa); 
         return CMD_OK_RETURN_VALUE;
     }
 

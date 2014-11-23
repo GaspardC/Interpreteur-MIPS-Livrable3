@@ -4,7 +4,7 @@
 #define EMULMIPS_H
 
 #include "mem.h"
-#include "commande.h"
+
 
 /* prompt du mode shell interactif */
 #define PROMPT_STRING "MipsShell : > "
@@ -54,7 +54,7 @@ typedef struct bp_t{
 
 char* get_next_token(interpreteur inter);
 int get_type(char* chaine);
-int execute_cmd(interpreteur inter, registre r,mem* memory,bp *bpi);
+int execute_cmd(interpreteur inter, registre r,mem* memory,bp* bpi);
 char* itoa(int val, int base);
 
 #endif
