@@ -541,6 +541,20 @@ resumecmd(interpreteur inter)
 	inter->mode = SCRIPT;
 }
 
+int IsInText(mem memory,int add){
+		uint32_t u=0; 
+		char s[20];
+		sprintf(s,"%x",add);
+		//DEBUG_MSG("s %s",s);
+		int n=numero_segment(s,memory);
+		if(n==-1){ WARNING_MSG("no in text"); return -1;}
+	    u=memory->seg[0].size._32;
+	    uint32_t v=memory->seg[0].start._32;
+	   // DEBUG_MSG("size %x start %x add %x",u,v,add);
+	    if(add-v<u){return 1;}
+	    else return -1;
+}
+
 /********************************************\
 		Commande disasm
 \********************************************/
@@ -667,44 +681,66 @@ disasmcmd(interpreteur inter, mem memory)
 \********************************************/
 
 
-void run(interpreteur inter,registre r, mem memory, bp bp)
+int run(interpreteur inter,registre r, mem memory, bp bp)
 {
-	char *token = NULL;
-	uint32_t a=0;
-	char *PC=NULL;
+	
+	//Si on se place au debut de .text
+	if (memory == NULL) {
+		WARNING_MSG("elf file required !!!\n");
+		return NO_ELF_LOAD;
+	}
 
+	setRegisterValue(r,32,0x3000);
+
+	char *token = NULL;
+	int a=0;
+	char PC[100];
 /*on charge l'adresse si elle est passé en argument et on vérifie qu'on commence à un mutliple de 4*/
 a=getRegisterValue(r,32);
+//DEBUG_MSG("PC %s a %x",PC,a);
+sprintf(PC,"%x",a);
+if((token=get_next_token(inter))!=NULL) {
+		strcpy(PC,token);
+		sscanf(PC,"%x",&a);
+	}
+//DEBUG_MSG("PC %s",PC);
 sscanf(PC,"%x",&a);
-
-if((token=get_next_token(inter))!=NULL) {PC=token;
-									sscanf(PC,"%x",&a);}
-
-
+//DEBUG_MSG("PC %x",a);
 a-=a%4;
-
 setRegisterValue(r,32,a);
 
-while(1){
 
-	if(1==check_bp(bp,a)) {
-	printf("Breakpoint en %x \n", a);
+//boucle infini tant qu'on voit pas un breakpoint ou qu'on est à la fin de .text
+while(1){
+	a=getRegisterValue(r,32);
+	if(-1==IsInText(memory,a)){ DEBUG_MSG("Plus dans .text"); break;}
+	if(NULL!=check_bp(bp,a)) {
+	printf("Breakpoint en %x STOP \n", a);
 	break;}
+
 	step(inter,r,memory);
 
 }
+//On peut remettre Pc a 3000 pour re run apres direct
+setRegisterValue(r,32,0x3000);
 
-quit(r,memory);
+
+INFO_MSG("run done !");
+return CMD_OK_RETURN_VALUE;
 
 }
 
-int check_bp(bp breakpoint,uint32_t PC){
-
+bp check_bp(bp breakpoint,int PC){
+	char PCS[100];
+	sprintf(PCS,"%x",PC);
+	bp bpa=find_by_add(breakpoint,PCS);
 	/* regarder longuer liste
 	initialiser a=0
 	pour 0 a longuer de la liste-1 regarder si breakpoint->Vaddr==PC si oui a=1 
 	puis on return a*/
-	return 1;
+	if(bpa==NULL){
+		DEBUG_MSG("no bp en PC %x",PC); return NULL;}
+	else{ DEBUG_MSG("bp en PC %x",PC); return bpa->suiv;}	
 }
 
 
@@ -721,9 +757,9 @@ int step(interpreteur inter,registre r, mem memory){
 	char type[10];
 	strcpy(type,"WORD");
 	PC=getRegisterValue(r,32); // adresse 
-	DEBUG_MSG("PC %08x",PC);
+	//DEBUG_MSG("PC %08x",PC);
 
-
+	if(IsInText(memory,PC)==-1){INFO_MSG("Not in seg text "); return CMD_WRONG_ARG;}
 	char hex[50];
 	sprintf(hex, "%x", PC);
 	DEBUG_MSG("PC %08x",PC);
@@ -738,14 +774,18 @@ int step(interpreteur inter,registre r, mem memory){
 
 	uint32_t u;
 	u=loadmem(PC,memory,type);
-	DEBUG_MSG("uint32_t %32x\n",u);
+	DEBUG_MSG("a %x il y a l'instruction  %32x\n",PC,u);
 	
 
 	 a=execute_asm(u, r,memory);
+
+	 if(quit(r,a)==1){
+		return CMD_OK_RETURN_VALUE;}
+
 	 PC+=4;
 	 setRegisterValue(r, 32, PC);
 
-	 // quit(r,memory); //sert a rien en fait ici ?
+	 
 
 
 
@@ -757,15 +797,17 @@ int step(interpreteur inter,registre r, mem memory){
 
 }
 
-int quit (registre r, mem memory){
-
-	uint32_t v;
-	v=0x0000000c; // code syscall en hexa
-	setRegisterValue(r, 2, 10);
-	execute_asm(v,r,memory); // TODO coder le retour proprement en prenant en compte le retrour de execute_asm et lib.c !
-
-	return CMD_OK_RETURN_VALUE;
-}
+int quit (registre r, int a){ //avec 200='code syscall' à définir
+		int b=0;
+		b=getRegisterValue(r,2);
+		if(a==200 && b==10)
+	 	{INFO_MSG("Fin d'execution");
+	 	int PC=0x3000;
+	 	setRegisterValue(r, 32, PC);
+	 	return 1;
+ 		}
+ 		else return 0;
+ 		}	
 
 int breakcmd(interpreteur inter, mem memory, bp * bpa) {
 	char* token=NULL;
@@ -778,9 +820,10 @@ int breakcmd(interpreteur inter, mem memory, bp * bpa) {
 
 	if(0==strcmp(token,"add")){
 		while((token=get_next_token(inter))!=NULL){
+
 			*bpa=ajouter_en_tete(*bpa,token);
 			
-			bp bpb = *bpa;
+		
 			/*
 			while((bpb)->suiv!=NULL){
 				DEBUG_MSG("*bpa suiv %p vaut %.32x",(*bpa)->suiv,(*bpa)->suiv->addr._32);
@@ -836,7 +879,7 @@ bp free_bp(bp bpa, char* token){
 
 		if(bpa==NULL){DEBUG_MSG("liste vide"); return NULL;}
 
-	else if (bpa!=NULL){
+	else {
 		
 		
 		bp bpb=find_by_add(bpa,token); //renvoie celui d'avant
@@ -890,7 +933,7 @@ bp find_by_add(bp bpa,char *token){
 
 	if (bpa==NULL)
 	{
-		WARNING_MSG("no breakpoints to delete");
+		DEBUG_MSG("no breakpoints to match");
 		return NULL;
 	}
 	/*if(bpa->suiv==NULL)
@@ -913,7 +956,7 @@ bp find_by_add(bp bpa,char *token){
 
 		if((bpb->suiv)->addr._32==a)
 		{	
-			DEBUG_MSG("add delete %32.x",(bpb->suiv)->addr._32);
+			DEBUG_MSG("addresse matched %32.x",(bpb->suiv)->addr._32);
 			return bpb;
 			
 		} //on revoie celui d'avant
@@ -940,11 +983,29 @@ bp free_list(bp bpa){
 
 }
 
+int deja_dans_liste(bp bp0,int a){
+
+	if(bp0==NULL){//DEBUG_MSG("vide");
+	 return 1;}
+	if(bp0->suiv==NULL && bp0->addr._32==a){INFO_MSG("Breakpoint existe deja a cette adresse"); return 0;}
+	while(bp0->suiv!=NULL){
+		if(a==bp0->addr._32) {INFO_MSG("Breakpoint existe deja a cette adresse"); return 0;
+	}
+	bp0=bp0->suiv;
+	}
+	//DEBUG_MSG("non vide mais n'existe pas deja");
+	return 1;
+}
+
 bp ajouter_en_tete(bp bp0,char* token){
 
 
        unsigned int a=0;
        sscanf(token,"%x",&a);
+       a=a-a%4; // On met des breakpoints que sur des multiples de 4
+       DEBUG_MSG("adresse du bp %x",a);
+       if(0==deja_dans_liste(bp0,a)) {return bp0;} // si le breakpoint existe déja on ne modifie rien
+
        bp newbp =  calloc(1,sizeof(*newbp));
 
        newbp->addr._32=a;

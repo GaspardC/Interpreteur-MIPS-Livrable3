@@ -270,6 +270,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
         r->reg[getRD(u)] =  r->reg[getRS(u)] ^ r->reg[getRT(u)];
 	return 0;
     }
+    else if(strcmp(instr,"")==0){DEBUG_MSG("plus d'instr");return 0;} //TODO la ca fait rien mais il faudrait prendre en compte le cas ou on lit 0x00 (rien) car sinon a chaque fois qu'on fait un step à la f'in on a warning message instruction inconnue alors que y'a rien!
     else {
     	WARNING_MSG("Instruction inconnue");
     	return 2;

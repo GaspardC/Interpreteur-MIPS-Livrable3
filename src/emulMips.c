@@ -285,14 +285,22 @@ int execute_cmd(interpreteur inter, registre r,mem *memory,bp * bpa) {
     else if(strcmp(token, "test") == 0) {
         return testcmd(inter);
     }
-    else if(strcmp(token, "test2") == 0) {
+    else if(strcmp(token, "test2") == 0) { //fonction pour essayer des test rapidement (fichiers tests marchent pas sur mac)
+        
+        int i=0;
+        int n=(*memory)->nseg;
+        for(i=0;i<n;i++){
+            printf("nom segment %s \n",(*memory)->seg[i].name );
+        }
+
+
         // int i=0; //vaddr32 c=0;
-        char x[20];
+        /*char x[20];
         strcpy( x, "$pc" );
-       
+       printf("is_in_text %d %d %d\n",IsInText(*memory,0x2090),IsInText(*memory,0x3003), IsInText(*memory,0x5000) );
 
         printf("%d\n",convert(x));
-
+*/
 
         //  printf("memory %p\n", *memory );
         // printf("nombre de segments %u\n", (*memory)->nseg );
@@ -346,14 +354,19 @@ int execute_cmd(interpreteur inter, registre r,mem *memory,bp * bpa) {
     else if (strcmp(token,"step")==0) {
         return step(inter,r,*memory);
     }
+     else if (strcmp(token,"run")==0) {
+         run(inter,r,*memory,*bpa);
+         return CMD_OK_RETURN_VALUE;
+    }
     else if (strcmp(token,"break")==0) {
         breakcmd(inter,*memory, bpa);
        // DEBUG_MSG("bpa apres break dans emulMips.c %p",*bpa); 
         return CMD_OK_RETURN_VALUE;
     }
-
+else {
     WARNING_MSG("Unknown Command : '%s'\n", cmdStr);
     return CMD_UNKOWN_RETURN_VALUE;
+}
 }
 
 
