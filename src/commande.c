@@ -777,10 +777,10 @@ int step(interpreteur inter,registre r, mem memory){
 	DEBUG_MSG("a %x il y a l'instruction  %32x\n",PC,u);
 	
 
-	 a=execute_asm(u, r,memory);
+	 a=execute_asm(u, r,memory); //renvois 200 si syscall
 
-	 if(quit(r,a)==1){
-		return CMD_OK_RETURN_VALUE;}
+	 if(syscall(r,memory,a)==10){
+		return 10;}
 
 	 PC+=4;
 	 setRegisterValue(r, 32, PC);
@@ -797,14 +797,47 @@ int step(interpreteur inter,registre r, mem memory){
 
 }
 
-int quit (registre r, int a){ //avec 200='code syscall' à définir
-		int b=0;
-		b=getRegisterValue(r,2);
-		if(a==200 && b==10)
+int syscall (registre r,mem memory, int a){
+		 //avec 200='code syscall' à définir
+		if(a!=200) {return 0;}
+		
+		int v0=0;
+		v0=getRegisterValue(r,2);
+	
+		if(v0==10) //exit
 	 	{INFO_MSG("Fin d'execution");
-	 	int PC=0x3000;
+
+	 	int PC=0x3000; //pas obligé mais on se remet au debut de .text //TODO remplacer le 0x3000 par mem->seg[n]->start._32
 	 	setRegisterValue(r, 32, PC);
-	 	return 1;
+
+	 	return 10;
+ 		}
+ 		if(v0==1){//afficher un entier sur la sortie standard
+ 			int a0=getRegisterValue(r,4);
+ 			INFO_MSG("affichage syscall sur l'entree standard");
+ 			printf("%d\n", a0);
+ 			return 1;
+
+ 		}
+ 		if(v0==4){//affichage chaine de caractere 
+ 			int a0=getRegisterValue(r,4);
+ 			//TODO aller verifier que on est dans .data puis lire a l'adresse a0-start de data
+ 			char *s=NULL;
+ 			INFO_MSG("affichage par adresse de syscall sur l'entree standard");
+ 			printf("%s %d\n", s,a0); //j'ai mis a0 juste pour enlever els Warnings en attendant de le faire propre
+ 			return 4;
+ 		}
+ 		if(8==v0){//lire une chaine sur l'entrée standard
+ 			int a1=getRegisterValue(r,5);
+ 			int a0=getRegisterValue(r,4);
+
+ 			//TODO aller verifier que on est dans .data puis lire a l'adresse a0-start de data
+ 			char s[a1]; 
+ 			scanf("%s %d %d",s,&a0,&a1); //j'ai mis &a0 et &a1 juste pour enlever les warnings en attendant
+ 			INFO_MSG("Lire une chaine par syscall sur l'entree standard");
+
+ 			return 8;
+
  		}
  		else return 0;
  		}	
