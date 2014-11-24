@@ -834,28 +834,51 @@ int breakcmd(interpreteur inter, mem memory, bp * bpa) {
 
 bp free_bp(bp bpa, char* token){
 
-		if(bpa==NULL){return NULL;}
+		if(bpa==NULL){DEBUG_MSG("liste vide"); return NULL;}
 
 	else if (bpa!=NULL){
 		
 		
 		bp bpb=find_by_add(bpa,token); //renvoie celui d'avant
-		if(bpb==NULL){ DEBUG_MSG("liste vide"); return NULL;}
-		if(bpb->suiv==NULL && bpb!=NULL){
-			DEBUG_MSG("liste vide");
-			free(bpb);
-			return NULL;}
 
-		if(NULL==((bpb->suiv)->suiv) && bpb->suiv!=NULL){ 
+		if(bpb==NULL){ DEBUG_MSG("no matches "); return bpa;}
+
+
+		if(NULL==((bpb->suiv)->suiv) && bpb->suiv!=NULL){ //on veut supprimer la queue de liste
 			free(bpb->suiv);
+
+			if(bpb->addr._32==0xFFFFFFFF){ // c'est la queue et la tete de liste 1 seul element
+				free(bpb);
+				DEBUG_MSG("liste vide");
+				return NULL;
+			}
+			else{ // si il ya d'autre elements avant 
+			bpb->suiv=NULL;
 			DEBUG_MSG("liste non vide");
-			return bpa;}
-		
+			return bpa;
+		}}
+
+		if(bpb->suiv==bpa){DEBUG_MSG("first match");
+						  if(bpb->suiv->suiv==NULL){
+						  	free(bpb->suiv);
+						  	free(bpb);
+						  	return NULL;
+						  }
+						  else{
+						  	bp bpd=bpb->suiv->suiv; 
+						  	DEBUG_MSG("bpd %x",bpd->addr._32);
+						  	free(bpb->suiv);
+						  	free(bpb);
+						  	return bpd;
+						  }	
+						}	
+		else {
+
 		bp bpc=bpb->suiv->suiv;
+		DEBUG_MSG("on libere %x et on connecte %x a %x",bpb->suiv->addr._32,bpb->addr._32,bpc->addr._32);		
 		free(bpb->suiv);	
 		(bpb->suiv)=bpc;
-		//print_list(bpa);
-		return bpa;
+		return bpa;}
 	}
 
 }
@@ -870,10 +893,20 @@ bp find_by_add(bp bpa,char *token){
 		WARNING_MSG("no breakpoints to delete");
 		return NULL;
 	}
-	if(bpa->suiv==NULL)
+	/*if(bpa->suiv==NULL)
 	{
 		WARNING_MSG("just 1 breakpoint");
+		if(bpa->addr._32==a)
 		return bpa;
+	}*/
+
+	if(bpa->addr._32==a){
+	bp newbp=NULL;
+	newbp=malloc(sizeof(*newbp));
+	newbp->suiv=bpa;
+	newbp->addr._32=0xFFFFFFFF;
+	DEBUG_MSG("first add match");
+	return newbp;
 	}
 
 	while(bpb->suiv!=NULL){
@@ -884,13 +917,13 @@ bp find_by_add(bp bpa,char *token){
 			return bpb;
 			
 		} //on revoie celui d'avant
+
 		bpb=bpb->suiv;
 
 	}
-	bp newbp=NULL;
-	newbp=malloc(sizeof(*newbp));
-	newbp->suiv=bpa;
-	return newbp;
+
+	DEBUG_MSG("No matches found");
+	return NULL;
 	
 }
 bp free_list(bp bpa){
@@ -929,6 +962,7 @@ void print_list(bp bp0){
 
 	bp bpp=bp0;
 
+	if(bpp==NULL){INFO_MSG("no breakpoints");}
 	while(bpp!=NULL){
 		printf("%x\n",(bpp->addr)._32 );
 		bpp=bpp->suiv;
