@@ -147,7 +147,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
     }
     
     else if(strcmp(instr,"JAL")==0) {
-        /* I: */r->reg[31]=r->reg[32]+8;
+        /* I: */r->reg[31]=r->reg[32]+8; // +4 sans DELAY SLOT !!!
 	//NextInstruction();
 	/* I+1: */ r->reg[32] = ((r->reg[32] & 0xF0000000)>>28) | (getTarget(u) << 2);
 	return 0;
@@ -156,9 +156,10 @@ int execute_asm(uint32_t u, registre r, mem memory)
     else if(strcmp(instr,"JARL")==0) {
         uint32_t temp;
 	/* I: */   temp = r->reg[getRS(u)];
-		   r->reg[getRD(u)] = r->reg[32] + 8;
+		   r->reg[getRD(u)] = r->reg[32] + 8; // +4 sans DELAY SLOT !!!
 	//NextInstruction();
 	/* I+1: */ r->reg[32] = temp;
+	return 0;
     }
     
     else if(strcmp(instr,"JR")==0) {
@@ -166,6 +167,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
 	/* I: */   temp = r->reg[getRS(u)];
 	//NextInstruction();
 	/* I+1: */ r->reg[32] = temp;
+	return 0;
     }
     
     else if(strcmp(instr,"LB")==0) {
@@ -227,46 +229,115 @@ int execute_asm(uint32_t u, registre r, mem memory)
         r->reg[getRT(u)] =  r->reg[getRS(u)] | (int32_t)(getIm(u));
 	return 0;
     }
+    
     /*else if(strcmp(instr,"SB")==0) {
         printf("%s %s, %d(%s)\n",getInstr(u), getR(getRT(u)), getOffset(u), getR(getRS(u)));
-    }
+    }*/
+    
     else if(strcmp(instr,"SEB")==0) {
-        printf("%s %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRT(u)));
+        r->reg[getRD(u)] =  (int32_t)(getbits(r->reg[getRT(u)],0,7));
+        return 0;
     }
+    
     else if(strcmp(instr,"SLL")==0) {
-        printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRT(u)), getR(getSA(u)));
+        r->reg[getRD(u)] =  getbits(r->reg[getRT(u)],0,getSA(u))<<getSA(u);
+        return 0;
     }
+    
     else if(strcmp(instr,"SLT")==0) {
-        printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRS(u)), getR(getRT(u)));
+        if(r->reg[getRS(u)]<r->reg[getRT(u)]) {
+            r->reg[getRD(u)]=0x00000001;
+            return 0;
+        }
+        
+        else {
+            r->reg[getRD(u)]=0x00000000;
+            return 0;
+        }
     }
+    
     else if(strcmp(instr,"SLTI")==0) {
-        printf("%s %s, %s, %d\n",getInstr(u), getR(getRT(u)), getR(getRS(u)), getIm(u));
+        if(r->reg[getRS(u)]<(int32_t)(getIm(u))) {
+            r->reg[getRT(u)]=0x00000001;
+            return 0;
+        }
+        
+        else {
+            r->reg[getRT(u)]=0x00000000;
+            return 0;
+        }
     }
+    
     else if(strcmp(instr,"SLTIU")==0) {
-        printf("%s %s, %s, %d\n",getInstr(u), getR(getRT(u)), getR(getRS(u)), getIm(u));
+        if( (0 | r->reg[getRS(u)]) < (0 | (int32_t)(getIm(u))) ) {
+            r->reg[getRT(u)]=0x00000001;
+            return 0;
+        }
+        
+        else {
+            r->reg[getRT(u)]=0x00000000;
+            return 0;
+        }
     }
+    
     else if(strcmp(instr,"SLTU")==0) {
-        printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRS(u)), getR(getRT(u)));
+        if( (0 | r->reg[getRS(u)]) < (0 | r->reg[getRT(u)]) ) {
+            r->reg[getRD(u)]=0x00000001;
+            return 0;
+        }
+        
+        else {
+            r->reg[getRD(u)]=0x00000000;
+            return 0;
+        }
     }
+    
     else if(strcmp(instr,"SRA")==0) {
-        printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRT(u)), getR(getSA(u)));
+        r->reg[getRD(u)]=(int32_t)(getbits(r->reg[getRD(u)],getSA(u),31));
+        return 0;
     }
+    
     else if(strcmp(instr,"SRL")==0) {
-        printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRT(u)), getR(getSA(u)));
+        r->reg[getRD(u)]=r->reg[getRD(u)]>>getSA(u);
+        return 0;
     }
+    
     else if(strcmp(instr,"SUB")==0) {
-        printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRS(u)), getR(getRT(u)));
+        uint64_t temp=0;
+	temp  = ((uint64_t)getbits(r->reg[getRS(u)],31,31) << 32) | (uint64_t)r->reg[getRS(u)];
+	temp -= ((uint64_t)getbits(r->reg[getRT(u)],31,31) << 32) | (uint64_t)r->reg[getRT(u)];
+	
+	if ((temp & 0x100000000)>>32 != (temp & 0x80000000)>>31) {
+		WARNING_MSG("Overflow");
+		return 1;
+	} 
+	else {
+		r->reg[getRD(u)] =  r->reg[getRS(u)] - r->reg[getRT(u)];
+		return 0;
+	}
     }
+    
     else if(strcmp(instr,"SUBU")==0) {
-        printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRS(u)), getR(getRT(u)));
+        r->reg[getRD(u)] =  r->reg[getRS(u)] - r->reg[getRT(u)];
+	return 0;
     }
-    else if(strcmp(instr,"SW")==0) {
+    
+    /*else if(strcmp(instr,"SW")==0) {
         printf("%s %s, %d(%s)\n",getInstr(u), getR(getRT(u)), getOffset(u), getR(getRS(u)));
-    }
+    }*/
+    
     else if(strcmp(instr,"SYSCALL")==0) {
-        printf("%s\n",getInstr(u));
+        if(r->reg[2]==10) {
+            INFO_MSG("Fin du programme");
+            return 10;
+        }
+    	else {
+    	    WARNING_MSG("Appel système inconnu");
+    	    return 1;
+    	}    
     }
-    */else if(strcmp(instr,"XOR")==0) {
+    
+    else if(strcmp(instr,"XOR")==0) {
         r->reg[getRD(u)] =  r->reg[getRS(u)] ^ r->reg[getRT(u)];
 	return 0;
     }
