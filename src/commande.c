@@ -788,7 +788,8 @@ step(interpreteur inter, registre r, mem memory, int *b)
 	//adresse
 		// DEBUG_MSG("PC %08x", PC);
 	if (IsInText(memory, PC) == -1) {
-		INFO_MSG("Not in seg text ");
+		WARNING_MSG("Not in seg text  : Pc now initialized to .text start");
+		setRegisterValue(r,32,0x3000); //TODO mettre debut de seg.text au lieu de 0x3000
 		return CMD_WRONG_ARG;
 	}
 	char		hex       [50];
@@ -816,8 +817,8 @@ step(interpreteur inter, registre r, mem memory, int *b)
 int
 syscall(registre r, mem memory, int a, int *b)
 {
-	//avec 200 = 'code syscall' à d é finir
-	if (a != 200) {
+	//avec 10= 'code syscall' à d é finir
+	if (a != 10) {
 		return 0;
 	}
 	int		v0 = 0;
@@ -878,7 +879,7 @@ breakcmd(interpreteur inter, mem memory, bp * bpa)
 		WARNING_MSG("elf file required !!!\n");
 		return NO_ELF_LOAD;
 	}
-	
+
 	if (0 == strcmp(token, "add")) {
 		while ((token = get_next_token(inter)) != NULL) {
 
