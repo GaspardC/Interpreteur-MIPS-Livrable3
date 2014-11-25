@@ -622,16 +622,13 @@ disasmcmd(interpreteur inter, mem memory)
 		 * return CMD_WRONG_ARG; }
 		 */
 		int		u = 0;
-
 		u = memory->seg[n].size._32;
 		for (i = addAI; i < addAI + incI; i++) {
 			if (i - addAI > u) {
 				break;
 			}
 			if (i % 4 == 0) {
-
 				combined = (*(memory->seg[n].content + (i - memory->seg[n].start._64))) << 24 | (*(memory->seg[n].content + (i + 1 - memory->seg[n].start._64))) << 16 | (*(memory->seg[n].content + (i + 2 - memory->seg[n].start._64))) << 8 | (*(memory->seg[n].content + (i + 3 - memory->seg[n].start._64)));
-
 				printf("%x :: %.8x\t", i, combined);
 				dispAssem(combined);
 			}
@@ -694,13 +691,15 @@ int
 run(interpreteur inter, registre r, mem memory, bp bp)
 {
 
-	//Si on se place au debut de.text
+	
 	if (memory == NULL) {
 		WARNING_MSG("elf file required !!!\n");
 		return NO_ELF_LOAD;
 	}
+	//Si Pc n'est pas dans .text on met par défaut PC au début de .text
+	if(-1==IsInText(memory,getRegisterValue(r,32))){
 	setRegisterValue(r, 32, 0x3000);
-
+	}
 	char           *token = NULL;
 	int		a = 0;
 	char		PC        [100];
@@ -710,7 +709,7 @@ run(interpreteur inter, registre r, mem memory, bp bp)
 	 * qu'on commence à un mutliple de 4
 	 */
 	a = getRegisterValue(r, 32);
-	//DEBUG_MSG("PC %s a %x", PC, a);
+	DEBUG_MSG("PC %s a %x", PC, a);
 	sprintf(PC, "%x", a);
 	if ((token = get_next_token(inter)) != NULL) {
 		strcpy(PC, token);
@@ -731,17 +730,20 @@ run(interpreteur inter, registre r, mem memory, bp bp)
 			break;
 		}
 		if (NULL != check_bp(bp, a)) {
-			printf("Breakpoint en %x STOP \n", a);
+			printf("Breakpoint en %x STOP PC = %x\n", a,a);
+			a+=4; //juste pour pouvoir faire un autre run apres le stop
+			setRegisterValue(r,32,a);
 			break;
 		}
 		step(inter, r, memory, &b);
-
 	}
-	//On peut remettre Pc a 3000 pour re run apres direct
-		setRegisterValue(r, 32, 0x3000);
+	a=getRegisterValue(r,32);
 
-
-	INFO_MSG("run done !");
+	
+	if(IsInText(memory,a)==-1){ //si on est a la fin de .text
+	INFO_MSG("run done STOP!");
+//On peut remettre Pc a 3000 pour re run apres direct
+		setRegisterValue(r, 32, 0x3000);}
 	return CMD_OK_RETURN_VALUE;
 
 }
@@ -778,6 +780,7 @@ check_bp(bp breakpoint, int PC)
 int
 step(interpreteur inter, registre r, mem memory, int *b)
 {
+
 	int		PC = 0,	n = 0, a = 0;
 	char		type      [10];
 	strcpy(type, "WORD");
@@ -865,18 +868,22 @@ int
 breakcmd(interpreteur inter, mem memory, bp * bpa)
 {
 	char           *token = NULL;
-
 	token = get_next_token(inter);
 	if (token == NULL) {
 		WARNING_MSG("Structure valide :\n\" break\" \"add <adresse>+ or del <adresse>+ |all or list \n");
 		return CMD_WRONG_ARG;
 	}
+
+	if (memory == NULL) {
+		WARNING_MSG("elf file required !!!\n");
+		return NO_ELF_LOAD;
+	}
+	
 	if (0 == strcmp(token, "add")) {
 		while ((token = get_next_token(inter)) != NULL) {
 
-			*bpa = ajouter_en_tete(*bpa, token);
 
-
+			 *bpa = ajouter_en_tete(*bpa, token,memory);
 			/*
 			 * while((bpb)->suiv!=NULL){ DEBUG_MSG("*bpa suiv %p
 			 * vaut %.32x",(*bpa)->suiv,(*bpa)->suiv->addr._32);
@@ -900,13 +907,9 @@ breakcmd(interpreteur inter, mem memory, bp * bpa)
 			return CMD_OK_RETURN_VALUE;
 		}
 		if (get_type(token) == HEXA) {
-
 			do
 				*bpa = free_bp(*bpa, token);
 			while ((token = get_next_token(inter)) != NULL && get_type(token) == HEXA);
-
-
-
 		}
 		return CMD_OK_RETURN_VALUE;
 	}
@@ -918,7 +921,6 @@ breakcmd(interpreteur inter, mem memory, bp * bpa)
 		return CMD_OK_RETURN_VALUE;
 	}
 	return CMD_OK_RETURN_VALUE;
-
 }
 
 bp
@@ -929,11 +931,8 @@ free_bp(bp bpa, char *token)
 		DEBUG_MSG("liste vide");
 		return NULL;
 	} else {
-
-
 		bp		bpb = find_by_add(bpa, token);
 		//renvoie celui d 'avant
-
 			if (bpb == NULL) {
 			DEBUG_MSG("no matches ");
 			return bpa;
@@ -941,7 +940,6 @@ free_bp(bp bpa, char *token)
 		if (NULL == ((bpb->suiv)->suiv) && bpb->suiv != NULL) {
 			//on veut supprimer la queue de liste
 				free(bpb->suiv);
-
 			if (bpb->addr._32 == 0xFFFFFFFF) {
 				//c 'est la queue et la tete de liste 1 seul element
 					free(bpb);
@@ -968,7 +966,6 @@ free_bp(bp bpa, char *token)
 				return bpd;
 			}
 		} else {
-
 			bp		bpc = bpb->suiv->suiv;
 			DEBUG_MSG("on libere %x et on connecte %x a %x", bpb->suiv->addr._32, bpb->addr._32, bpc->addr._32);
 			free(bpb->suiv);
@@ -976,7 +973,6 @@ free_bp(bp bpa, char *token)
 			return bpa;
 		}
 	}
-
 }
 bp
 find_by_add(bp bpa, char *token)
@@ -985,7 +981,6 @@ find_by_add(bp bpa, char *token)
 	sscanf(token, "%x", &a);
 	bp		bpb;
 	bpb = bpa;
-
 	if (bpa == NULL) {
 		DEBUG_MSG("no breakpoints to match");
 		return NULL;
@@ -1008,37 +1003,27 @@ find_by_add(bp bpa, char *token)
 		if ((bpb->suiv)->addr._32 == a) {
 			DEBUG_MSG("addresse matched %32.x", (bpb->suiv)->addr._32);
 			return bpb;
-
 		} //on revoie celui d 'avant
-
 			bpb = bpb->suiv;
-
 	}
-
 	DEBUG_MSG("No matches found");
 	return NULL;
-
 }
 bp
 free_list(bp bpa)
 {
-
-
 	while (bpa != NULL) {
 		DEBUG_MSG("bpa %p", bpa);
 		bp		bpb = bpa;
 		free(bpa);
 		bpa = bpb->suiv;
-
 	}
 	return NULL;
-
 }
 
 int
 deja_dans_liste(bp bp0, int a)
 {
-
 	if (bp0 == NULL) {
 		//DEBUG_MSG("vide");
 		return 1;
@@ -1059,10 +1044,8 @@ deja_dans_liste(bp bp0, int a)
 }
 
 bp
-ajouter_en_tete(bp bp0, char *token)
+ajouter_en_tete(bp bp0, char *token, mem memory)
 {
-
-
 	unsigned int	a = 0;
 	sscanf(token, "%x", &a);
 	a = a - a % 4;
@@ -1070,9 +1053,13 @@ ajouter_en_tete(bp bp0, char *token)
 		DEBUG_MSG("adresse du bp %x", a);
 	if (0 == deja_dans_liste(bp0, a)) {
 		return bp0;
-	} //si le breakpoint existe d é ja on ne modifie rien
-
+	} //si le breakpoint existe déja on ne modifie rien
+	if(-1==IsInText(memory,a)){
+		return bp0;
+	}
+	
 		bp newbp = calloc(1, sizeof(*newbp));
+	
 
 	newbp->addr._32 = a;
 	newbp->suiv = bp0;
@@ -1081,18 +1068,14 @@ ajouter_en_tete(bp bp0, char *token)
 	 * %x",newbp,newbp->addr._32); if(bp0!=NULL){ DEBUG_MSG("previous
 	 * breakpoint %p vaut %x",bp0,(bp0->addr)._32);}
 	 */
-
 	return newbp;
-
 }
 
 
 void
 print_list(bp bp0)
 {
-
 	bp		bpp = bp0;
-
 	if (bpp == NULL) {
 		INFO_MSG("no breakpoints");
 	}
@@ -1100,7 +1083,6 @@ print_list(bp bp0)
 		printf("%x\n", (bpp->addr)._32);
 		bpp = bpp->suiv;
 	}
-
 }
 
 /********************************************\
@@ -1115,7 +1097,6 @@ numero_segment(char *chaine, mem memory)
 	int		i = 0;
 	//i = n numero de segment
 		// printf("%x\n", a);
-
 	for (i = 0; i < memory->nseg; i++) {
 		b = (uint32_t) memory->seg[i].start._64;
 		c = (uint32_t) memory->seg[i + 1].start._64;

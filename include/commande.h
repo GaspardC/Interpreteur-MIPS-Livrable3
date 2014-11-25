@@ -48,7 +48,7 @@ bp check_bp(bp breakpoint,int PC);
 int breakcmd(interpreteur inter, mem memory, bp *bp0);
 bp free_list(bp bp);
 bp free_bp(bp bp, char* token);
-bp ajouter_en_tete(bp bp,char* token);
+bp ajouter_en_tete(bp bp,char* token, mem memory);
 void print_list(bp bp0);
 bp find_by_add(bp bpa,char *token);
 int IsInText(mem memory,int i);
