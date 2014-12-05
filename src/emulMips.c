@@ -263,6 +263,7 @@ int execute_cmd(interpreteur inter, registre r,mem *memory,bp * bpa) {
     char cmdStr[MAX_STR];
 
     memset( cmdStr, '\0', MAX_STR );
+    int b=1;
 
 
 
@@ -352,7 +353,7 @@ int execute_cmd(interpreteur inter, registre r,mem *memory,bp * bpa) {
         return disasmcmd(inter,*memory);
     }
     else if (strcmp(token,"step")==0) {
-        return step(inter,r,*memory);
+        return step(inter,r,*memory,&b);
     }
      else if (strcmp(token,"run")==0) {
          run(inter,r,*memory,*bpa);
