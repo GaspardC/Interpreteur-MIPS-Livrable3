@@ -58,7 +58,7 @@ loadcmd(interpreteur inter, mem * memory)
 
 
 		nsegments = get_nsegments(symtab, section_names, NB_SECTIONS);
-
+		nsegments+=1;
 		//allouer la memoire virtuelle
 			* memory = init_mem(nsegments);
 
@@ -66,15 +66,40 @@ loadcmd(interpreteur inter, mem * memory)
 			j = 0;
 		for (i = 0; i < NB_SECTIONS; i++) {
 			if (is_in_symbols(section_names[i], symtab)) {
-				elf_load_section_in_memory(pf_elf, *memory, section_names[i],
-						     segment_permissions[i],
-							next_segment_start);
+				elf_load_section_in_memory(pf_elf, *memory, section_names[i],segment_permissions[i],next_segment_start);
 				next_segment_start += (((*memory)->seg[j].size._32 + 0x1000) >> 12) << 12;
 				//on arrondit au 1 k supp Ã ©rieur
 					// print_segment_raw_content(&(*memory)->seg[j]);
 				j++;
 			}
 		}
+
+		/* arguments : memomry, scn=STACK_SECTION, RW, unsigned long long add_start =0xff7ff000; 
+		RW_=2;
+		fill_mem_scn(mem vm, char *name, vsize sz, vaddr start, byte * content);
+			*/
+
+		
+
+		byte *ehdr;
+		//ehdr= calloc(0x800000,sizeof(uint32_t));
+		ehdr = malloc( sizeof( Elf32_Ehdr ) );
+		char stack_name[20];
+		strcpy(stack_name,".stack");
+		attach_scn_to_mem(*memory, stack_name, SCN_ATTR( WIDTH_FROM_EHDR(ehdr) , RW_));
+		byte       *section    = NULL;
+		//section = malloc( 8388608 );
+		section =NULL;
+		vsize v;
+		uint32_t a =8388608;
+		v._32=a;
+		vaddr va;
+		va._32=0xff7ff000;
+		fill_mem_scn(*memory, stack_name, v, va, section );
+
+
+
+	
 
 		del_stab(symtab);
 		fclose(pf_elf);
@@ -808,8 +833,7 @@ step(interpreteur inter, registre r, mem memory, int *b)
 		if (syscall(r, memory, a, b) == 10) {
 		return 10;
 	}
-	PC += 4;
-	setRegisterValue(r, 32, PC);
+	r->reg[32]+= 4;
 	return CMD_OK_RETURN_VALUE;
 
 }

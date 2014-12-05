@@ -332,6 +332,12 @@ int execute_asm(uint32_t u, registre r, mem memory)
             INFO_MSG("Fin du programme");
             return 10;
         }
+
+        if (r->reg[2] == 1) {
+	    INFO_MSG("affichage syscall sur l'entree standard");
+	    printf("%d", r->reg[4]);
+	    return 0;
+	}
     	else {
     	    WARNING_MSG("Appel système inconnu");
     	    return 1;
@@ -378,3 +384,5 @@ int loadmem(uint32_t vAddr, mem memory, char* type)
 	}
 	else return 0;
 }
+
+/* STORE MEMORY */

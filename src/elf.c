@@ -756,7 +756,8 @@ int elf_load_scntab( FILE *fp, unsigned int width, scntab *scntab ) {
                 free( elf_shdr );
                 return 1;
             }
-
+            
+            DEBUG_MSG( "nscns %u", nscns);
             *scntab = new_scntab( nscns );
 
             for ( i= 0; i< nscns; i++ ) {

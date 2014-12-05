@@ -489,6 +489,7 @@ int main ( int argc, char *argv[] ) {
     registre r=NULL;
     r = registre_new(35);
     mem memory = NULL;
+    setRegisterValue(r,31,0xff7ff000);
  
 
     if ( argc > 2 ) {
