@@ -399,10 +399,10 @@ void dispAssem(uint32_t u)
         printf("%s %s, %s\n",getInstr(u), getR(getRS(u)), getR(getRT(u)));
     }
     else if(strcmp(instr,"J")==0) {
-        printf("%s %x\n",getInstr(u), getTarget(u)<<2);
+        printf("%s 0x%x\n",getInstr(u), getTarget(u)<<2);
     }
     else if(strcmp(instr,"JAL")==0) {
-        printf("%s %x\n",getInstr(u), getTarget(u)<<2);
+        printf("%s 0x%x\n",getInstr(u), getTarget(u)<<2);
     }
     else if(strcmp(instr,"JARL")==0) {
         printf("%s %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRS(u)));

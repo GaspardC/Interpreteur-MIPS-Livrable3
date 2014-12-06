@@ -51,6 +51,11 @@ loadcmd(interpreteur inter, mem * memory)
 			ERROR_MSG("file %s is not an ELF file", chaine);
 			return CMD_UNKOWN_RETURN_VALUE;
 		}
+		if ((chaine = get_next_token(inter)) != NULL) {
+			uint32_t addr;
+			sscanf(chaine,"%x",&addr);
+			next_segment_start = ((addr) >> 12) << 12;
+		}
 		//recuperation des info de l 'architecture
 			elf_get_arch_info(pf_elf, &type_machine, &endianness, &bus_width);
 		//et des symboles

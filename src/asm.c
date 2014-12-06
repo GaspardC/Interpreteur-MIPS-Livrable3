@@ -143,14 +143,14 @@ int execute_asm(uint32_t u, registre r, mem memory)
     else if(strcmp(instr,"J")==0) {
         /* I: */ 
 	NextInstruction(u,r,memory);
-	/* I+1: */ r->reg[32] = ((r->reg[32] & 0xF0000000)>>28) | (getTarget(u)<<2);
+	/* I+1: */ r->reg[32] = ((r->reg[32] & 0xF0000000)>>28) | (getTarget(u)<<2)-4;
 	return 0;
     }
     
     else if(strcmp(instr,"JAL")==0) {
         /* I: */r->reg[31]=r->reg[32]+8; // +4 sans DELAY SLOT !!!
 	NextInstruction(u,r,memory);
-	/* I+1: */ r->reg[32] = ((r->reg[32] & 0xF0000000)>>28) | (getTarget(u)<<2);
+	/* I+1: */ r->reg[32] = ((r->reg[32] & 0xF0000000)>>28) | (getTarget(u)<<2)-4;
 	return 0;
     }
     
@@ -159,7 +159,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
 	/* I: */   temp = r->reg[getRS(u)];
 		   r->reg[getRD(u)] = r->reg[32] + 8; // +4 sans DELAY SLOT !!!
 	NextInstruction(u,r,memory);
-	/* I+1: */ r->reg[32] = temp;
+	/* I+1: */ r->reg[32] = temp-4;
 	return 0;
     }
     
@@ -167,7 +167,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
         uint32_t temp;
 	/* I: */   temp = r->reg[getRS(u)];
 	NextInstruction(u,r,memory);
-	/* I+1: */ r->reg[32] = temp;
+	/* I+1: */ r->reg[32] = temp-4;
 	return 0;
     }
     
