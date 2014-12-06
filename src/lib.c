@@ -399,10 +399,10 @@ void dispAssem(uint32_t u)
         printf("%s %s, %s\n",getInstr(u), getR(getRS(u)), getR(getRT(u)));
     }
     else if(strcmp(instr,"J")==0) {
-        printf("%s %d\n",getInstr(u), getTarget(u)<<2);
+        printf("%s %x\n",getInstr(u), getTarget(u)<<2);
     }
     else if(strcmp(instr,"JAL")==0) {
-        printf("%s %d\n",getInstr(u), getTarget(u)<<2);
+        printf("%s %x\n",getInstr(u), getTarget(u)<<2);
     }
     else if(strcmp(instr,"JARL")==0) {
         printf("%s %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRS(u)));
@@ -449,7 +449,7 @@ void dispAssem(uint32_t u)
         printf("%s %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRT(u)));
     }
     else if(strcmp(instr,"SLL")==0) {
-        printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRT(u)), getR(getSA(u)));
+        printf("%s %s, %s, %d\n",getInstr(u), getR(getRD(u)), getR(getRT(u)), getSA(u));
     }
     else if(strcmp(instr,"SLT")==0) {
         printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRS(u)), getR(getRT(u)));
@@ -464,10 +464,10 @@ void dispAssem(uint32_t u)
         printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRS(u)), getR(getRT(u)));
     }
     else if(strcmp(instr,"SRA")==0) {
-        printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRT(u)), getR(getSA(u)));
+        printf("%s %s, %s, %d\n",getInstr(u), getR(getRD(u)), getR(getRT(u)), getSA(u));
     }
     else if(strcmp(instr,"SRL")==0) {
-        printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRT(u)), getR(getSA(u)));
+        printf("%s %s, %s, %d\n",getInstr(u), getR(getRD(u)), getR(getRT(u)), getSA(u));
     }
     else if(strcmp(instr,"SUB")==0) {
         printf("%s %s, %s, %s\n",getInstr(u), getR(getRD(u)), getR(getRS(u)), getR(getRT(u)));

@@ -286,7 +286,7 @@ int execute_cmd(interpreteur inter, registre r,mem *memory,bp * bpa) {
     else if(strcmp(token, "test") == 0) {
         return testcmd(inter);
     }
-    else if(strcmp(token, "test2") == 0) { //fonction pour essayer des test rapidement (fichiers tests marchent pas sur mac)
+    /*else if(strcmp(token, "test2") == 0) { //fonction pour essayer des test rapidement (fichiers tests marchent pas sur mac)
         
         int i=0;
         int n=(*memory)->nseg;
@@ -296,7 +296,7 @@ int execute_cmd(interpreteur inter, registre r,mem *memory,bp * bpa) {
 
 
         // int i=0; //vaddr32 c=0;
-        /*char x[20];
+        char x[20];
         strcpy( x, "$pc" );
        printf("is_in_text %d %d %d\n",IsInText(*memory,0x2090),IsInText(*memory,0x3003), IsInText(*memory,0x5000) );
 
