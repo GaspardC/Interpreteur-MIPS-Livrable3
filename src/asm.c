@@ -62,7 +62,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
 	int condition;
 	/* I: */   condition = (r->reg[getRS(u)] == r->reg[getRT(u)]);
 	           target_offset = (int64_t)(getOffset(u) << 2);
-	//NextInstruction();
+    NextInstruction(u,r,memory);
 	/* I+1: */ if (condition) {
 			r->reg[32] = r->reg[32] + target_offset - 4;
 		   }
@@ -74,7 +74,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
 	int condition;
 	/* I: */   condition = (r->reg[getRS(u)] >= 0);
 	           target_offset = (int64_t)(getOffset(u) << 2);
-	//NextInstruction();
+	NextInstruction(u,r,memory);
 	/* I+1: */ if (condition) {
 			r->reg[32] = r->reg[32] + target_offset - 4;
 		   }
@@ -87,7 +87,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
 	/* I: */   condition = (r->reg[getRS(u)] > 0);
 
 	           target_offset = (int64_t)(getOffset(u) << 2);
-	//NextInstruction();
+	NextInstruction(u,r,memory);
 	/* I+1: */ if (condition) {
 			r->reg[32] = r->reg[32] + target_offset - 4;
 		   }
@@ -99,7 +99,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
 	int condition;
 	/* I: */   condition = (r->reg[getRS(u)] <= 0);
 	           target_offset = (int64_t)(getOffset(u) << 2);
-	//NextInstruction();
+	NextInstruction(u,r,memory);
 	/* I+1: */ if (condition) {
 			r->reg[32] = r->reg[32] + target_offset - 4;
 		   }
@@ -111,7 +111,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
 	int condition;
 	/* I: */   condition = (r->reg[getRS(u)] < 0);
 	           target_offset = (int64_t)(getOffset(u) << 2);
-	//NextInstruction(); 
+	NextInstruction(u,r,memory);
 	/* I+1: */ if (condition) {
 			r->reg[32] = r->reg[32] + target_offset - 4;
 		   }
@@ -123,7 +123,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
 	int condition;
 	/* I: */   condition = (r->reg[getRS(u)] != r->reg[getRT(u)]);
 	           target_offset = (int64_t)(getOffset(u) << 2);
-	//NextInstruction();
+	NextInstruction(u,r,memory);
 	/* I+1: */ if (condition) {
 			r->reg[32] = r->reg[32] + target_offset - 4;
 		   }
@@ -142,15 +142,15 @@ int execute_asm(uint32_t u, registre r, mem memory)
     
     else if(strcmp(instr,"J")==0) {
         /* I: */ 
-	//NextInstruction();
-	/* I+1: */ r->reg[32] = ((r->reg[32] & 0xF0000000)>>28) | (getTarget(u) << 2);
+	NextInstruction(u,r,memory);
+	/* I+1: */ r->reg[32] = ((r->reg[32] & 0xF0000000)>>28) | (getTarget(u))|00;
 	return 0;
     }
     
     else if(strcmp(instr,"JAL")==0) {
         /* I: */r->reg[31]=r->reg[32]+8; // +4 sans DELAY SLOT !!!
-	//NextInstruction();
-	/* I+1: */ r->reg[32] = ((r->reg[32] & 0xF0000000)>>28) | (getTarget(u) << 2);
+	NextInstruction(u,r,memory);
+	/* I+1: */ r->reg[32] = ((r->reg[32] & 0xF0000000)>>28) | (getTarget(u))|00;
 	return 0;
     }
     
@@ -158,7 +158,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
         uint32_t temp;
 	/* I: */   temp = r->reg[getRS(u)];
 		   r->reg[getRD(u)] = r->reg[32] + 8; // +4 sans DELAY SLOT !!!
-	//NextInstruction();
+	NextInstruction(u,r,memory);
 	/* I+1: */ r->reg[32] = temp;
 	return 0;
     }
@@ -166,7 +166,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
     else if(strcmp(instr,"JR")==0) {
         uint32_t temp;
 	/* I: */   temp = r->reg[getRS(u)];
-	//NextInstruction();
+	NextInstruction(u,r,memory);
 	/* I+1: */ r->reg[32] = temp;
 	return 0;
     }
@@ -332,7 +332,6 @@ int execute_asm(uint32_t u, registre r, mem memory)
             INFO_MSG("Fin du programme");
             return 10;
         }
-
         if (r->reg[2] == 1) {
 	    INFO_MSG("affichage syscall sur l'entree standard");
 	    printf("%d", r->reg[4]);
@@ -356,7 +355,17 @@ int execute_asm(uint32_t u, registre r, mem memory)
 
 }
 
+int NextInstruction(uint32_t u,registre r,mem memory){
 
+    char  type2  [10];
+    strcpy(type2, "WORD");
+
+    int PC2=(r->reg[32])+4;
+    u = loadmem(PC2, memory, type2);
+    execute_asm(u,r,memory);
+    DEBUG_MSG("C'est magnigique");
+    return 0;
+}
 
 /* LOAD MEMORY */
 
