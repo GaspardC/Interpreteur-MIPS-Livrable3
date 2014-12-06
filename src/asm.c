@@ -375,11 +375,8 @@ int execute_asm(uint32_t u, registre r, mem memory)
 
 int NextInstruction(uint32_t u,registre r,mem memory){
 
-    char  type2  [10];
-    strcpy(type2, "WORD");
-
-    int PC2=(r->reg[32])+4;
-    u = loadmem(PC2, memory, type2);
+    (r->reg[32])+=4;
+    u = loadmem(r->reg[32], memory,"WORD");
     execute_asm(u,r,memory);
     DEBUG_MSG("C'est magnigique");
     return 0;
@@ -402,7 +399,7 @@ int loadmem(uint32_t vAddr, mem memory, char* type)
 		{
 			n=i;
 		}
-	//printf("%x %x %x\n",memory->seg[i].start._32, vAddr,memory->seg[i].start._32+memory->seg[i].size._32);
+	printf("%x %x %x\n",memory->seg[i].start._32, vAddr,memory->seg[i].start._32+memory->seg[i].size._32);
 			
 	}
 	if(n==-1)
