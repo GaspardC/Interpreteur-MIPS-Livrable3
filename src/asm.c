@@ -1,6 +1,7 @@
 #include "asm.h"
 #include "registre.h"
 #include "lib.h"
+#include <string.h>
 
 // Essai collaboration GITHUB
 
@@ -348,6 +349,10 @@ int execute_asm(uint32_t u, registre r, mem memory)
         if (r->reg[2] == 1) {
 	    INFO_MSG("affichage syscall sur l'entree standard");
 	    printf("%d", r->reg[4]);
+	    return 0;
+	}
+	if (r->reg[2] == 4) {
+	    INFO_MSG("affichage d'une chaine de caractère");
 	    return 0;
 	}
     	else {
