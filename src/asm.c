@@ -236,9 +236,11 @@ int execute_asm(uint32_t u, registre r, mem memory)
 	return 0;
     }
     
-    /*else if(strcmp(instr,"SB")==0) {
-        printf("%s %s, %d(%s)\n",getInstr(u), getR(getRT(u)), getOffset(u), getR(getRS(u)));
-    }*/
+    else if(strcmp(instr,"SB")==0) {
+        uint32_t vAddr = (int32_t)(getOffset(u))+r->reg[getRS(u)];
+        uint8_t byte = getbits(r->reg[getRS(u)],0,7);
+	return storemem(vAddr,byte,memory,"BYTE");
+    }
     
     else if(strcmp(instr,"SEB")==0) {
         r->reg[getRD(u)] =  (int32_t)(getbits(r->reg[getRT(u)],0,7));
@@ -328,9 +330,15 @@ int execute_asm(uint32_t u, registre r, mem memory)
 	return 0;
     }
     
-    /*else if(strcmp(instr,"SW")==0) {
-        printf("%s %s, %d(%s)\n",getInstr(u), getR(getRT(u)), getOffset(u), getR(getRS(u)));
-    }*/
+    else if(strcmp(instr,"SW")==0) {
+        uint32_t vAddr = (int32_t)(getOffset(u))+r->reg[getRS(u)];
+        if (getbits(vAddr,0,1) != 0) {
+		WARNING_MSG("Probleme d'adresse");
+		return 1;
+	}
+	int32_t word = r->reg[getRT(u)];
+	return storemem(vAddr,word,memory,"WORD");
+    }
     
     else if(strcmp(instr,"SYSCALL")==0) {
         if(r->reg[2]==10) {
@@ -415,3 +423,43 @@ int loadmem(uint32_t vAddr, mem memory, char* type)
 }
 
 /* STORE MEMORY */
+
+int storemem(uint32_t vAddr, int data, mem memory, char* type)
+{
+	if(memory==NULL)
+	{
+		WARNING_MSG("Memoire vide");
+		return 0;
+	}
+	int i;
+	int n=-1;
+	for(i=0;i<memory->nseg;i++)
+	{
+		if((memory->seg[i].start._32)<=vAddr &&  vAddr<=(memory->seg[i].start._32+memory->seg[i].size._32))
+		{
+			n=i;
+		}
+	//printf("%x %x %x\n",memory->seg[i].start._32, vAddr,memory->seg[i].start._32+memory->seg[i].size._32);
+			
+	}
+	if(n==-1)
+	{
+		WARNING_MSG("Segment inexistant");
+		return -1;
+	}
+	
+	if(strcmp(type,"WORD")==0)
+	{	
+		(*(memory->seg[n].content + (vAddr - memory->seg[n].start._32)))=(data & 0xFF000000)>>24;
+		(*(memory->seg[n].content + (vAddr + 1 - memory->seg[n].start._32)))=(data & 0x00FF0000)>>16;
+		(*(memory->seg[n].content + (vAddr + 2 - memory->seg[n].start._32)))=(data & 0x0000FF00)>>8;
+		(*(memory->seg[n].content + (vAddr + 3 - memory->seg[n].start._32)))=(data & 0x000000FF);
+		return 0;
+	}
+	if(strcmp(type,"BYTE")==0)
+	{
+		(*(memory->seg[n].content + (vAddr - memory->seg[n].start._32)))=data;
+		return 0;
+	}
+	else return -1;
+}
