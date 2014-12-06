@@ -135,6 +135,11 @@ int execute_asm(uint32_t u, registre r, mem memory)
     }
     
     else if(strcmp(instr,"DIV")==0) {
+    	if(r->reg[getRT(u)]==0)
+    	{
+    		WARNING_MSG("Division par 0");
+    		return -1;
+    	}
         r->reg[34]=(int32_t)r->reg[getRS(u)] / (int32_t)r->reg[getRT(u)];
         r->reg[33]=(int32_t)r->reg[getRS(u)] % (int32_t)r->reg[getRT(u)];
         return 0;
@@ -376,19 +381,34 @@ int loadmem(uint32_t vAddr, mem memory, char* type)
 		WARNING_MSG("Memoire vide");
 		return 0;
 	}
+	int i;
+	int n=-1;
+	for(i=0;i<memory->nseg;i++)
+	{
+		if((memory->seg[i].start._32)<=vAddr &&  vAddr<=(memory->seg[i].start._32+memory->seg[i].size._32))
+		{
+			n=i;
+		}
+	//printf("%x %x %x\n",memory->seg[i].start._32, vAddr,memory->seg[i].start._32+memory->seg[i].size._32);
+			
+	}
+	if(n==-1)
+	{
+		WARNING_MSG("Segment inexistant");
+		return 0;
+	}
 	
 	if(strcmp(type,"WORD")==0)
 	{
-		int n=0;
+		
 		uint32_t combined=0;
-		combined = (*(memory->seg[n].content + (vAddr - memory->seg[n].start._64))) << 24 | (*(memory->seg[n].content + (vAddr + 1 - memory->seg[n].start._64))) << 16 | (*(memory->seg[n].content + (vAddr + 2 - memory->seg[n].start._64))) << 8 | (*(memory->seg[n].content + (vAddr + 3 - memory->seg[n].start._64)));
+		combined = (*(memory->seg[n].content + (vAddr - memory->seg[n].start._32))) << 24 | (*(memory->seg[n].content + (vAddr + 1 - memory->seg[n].start._32))) << 16 | (*(memory->seg[n].content + (vAddr + 2 - memory->seg[n].start._32))) << 8 | (*(memory->seg[n].content + (vAddr + 3 - memory->seg[n].start._32)));
 		return combined;
 	}
 	if(strcmp(type,"BYTE")==0)
 	{
-		int n=0;
 		uint8_t combined=0;
-		combined = (*(memory->seg[n].content + (vAddr - memory->seg[n].start._64)));
+		combined = (*(memory->seg[n].content + (vAddr - memory->seg[n].start._32)));
 		return combined;
 	}
 	else return 0;

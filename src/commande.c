@@ -651,10 +651,8 @@ disasmcmd(interpreteur inter, mem memory)
 		 * if(numero_segment(s,memory)!=0) {DEBUG_MSG("out of .text");
 		 * return CMD_WRONG_ARG; }
 		 */
-		int		u = 0;
-		u = memory->seg[n].size._32;
 		for (i = addAI; i < addAI + incI; i++) {
-			if (i - addAI > u) {
+			if (i - addAI == memory->seg[n].size._32) {
 				break;
 			}
 			if (i % 4 == 0) {
@@ -691,6 +689,9 @@ disasmcmd(interpreteur inter, mem memory)
 			return CMD_WRONG_ARG;
 		}
 		for (i = addAI; i <= addBI; i++) {
+			if (i - addAI == memory->seg[n].size._32) {
+				break;
+			}
 			if (i % 4 == 0) {
 				//une instruction tous les 4(= word de 32 bits)
 					combined = (*(memory->seg[n].content + (i - memory->seg[n].start._64))) << 24 | (*(memory->seg[n].content + (i + 1 -
@@ -773,7 +774,7 @@ run(interpreteur inter, registre r, mem memory, bp bp)
 	if(IsInText(memory,a)==-1){ //si on est a la fin de .text
 	INFO_MSG("run done STOP!");
 //On peut remettre Pc a 3000 pour re run apres direct
-		setRegisterValue(r, 32, 0x3000);}
+		setRegisterValue(r, 32, memory->seg[0].start._32);}
 	return CMD_OK_RETURN_VALUE;
 
 }
