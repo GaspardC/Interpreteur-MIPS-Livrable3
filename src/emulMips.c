@@ -301,7 +301,7 @@ int execute_cmd(interpreteur inter, registre r,mem *memory,bp * bpa) {
        printf("is_in_text %d %d %d\n",IsInText(*memory,0x2090),IsInText(*memory,0x3003), IsInText(*memory,0x5000) );
 
         printf("%d\n",convert(x));
-*/
+
 
         //  printf("memory %p\n", *memory );
         // printf("nombre de segments %u\n", (*memory)->nseg );
@@ -322,7 +322,7 @@ int execute_cmd(interpreteur inter, registre r,mem *memory,bp * bpa) {
         //printf("%d\n", getRegisterValueByStr(r, "$31"));
         // printf("%s\n",itoa(a,16) );
         // printf("%d\n",is_hexa("0x33AB") );
-    }
+    }*/
     else if(strcmp(token, "disp") == 0) {
         return dispcmd(inter,r,*memory);
     }
