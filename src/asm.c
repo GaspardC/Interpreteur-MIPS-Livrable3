@@ -143,14 +143,14 @@ int execute_asm(uint32_t u, registre r, mem memory)
     else if(strcmp(instr,"J")==0) {
         /* I: */ 
 	NextInstruction(u,r,memory);
-	/* I+1: */ r->reg[32] = ((r->reg[32] & 0xF0000000)>>28) | (getTarget(u)<<2)-4;
+	/* I+1: */ r->reg[32] = (((r->reg[32] & 0xF0000000)>>28) | (getTarget(u)<<2))-4;
 	return 0;
     }
     
     else if(strcmp(instr,"JAL")==0) {
         /* I: */r->reg[31]=r->reg[32]+8; // +4 sans DELAY SLOT !!!
 	NextInstruction(u,r,memory);
-	/* I+1: */ r->reg[32] = ((r->reg[32] & 0xF0000000)>>28) | (getTarget(u)<<2)-4;
+	/* I+1: */ r->reg[32] = (((r->reg[32] & 0xF0000000)>>28) | (getTarget(u)<<2))-4;
 	return 0;
     }
     

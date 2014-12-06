@@ -74,7 +74,7 @@ loadcmd(interpreteur inter, mem * memory)
 				elf_load_section_in_memory(pf_elf, *memory, section_names[i],segment_permissions[i],next_segment_start);
 				next_segment_start += (((*memory)->seg[j].size._32 + 0x1000) >> 12) << 12;
 				//on arrondit au 1 k supp Ã ©rieur
-					// print_segment_raw_content(&(*memory)->seg[j]);
+				//print_segment_raw_content(&(*memory)->seg[j]);
 				j++;
 			}
 		}
@@ -728,7 +728,7 @@ run(interpreteur inter, registre r, mem memory, bp bp)
 	}
 	//Si Pc n'est pas dans .text on met par défaut PC au début de .text
 	if(-1==IsInText(memory,getRegisterValue(r,32))){
-	setRegisterValue(r, 32, 0x3000);
+	setRegisterValue(r, 32, memory->seg[0].start._32);
 	}
 	char           *token = NULL;
 	int		a = 0;
@@ -811,28 +811,26 @@ int
 step(interpreteur inter, registre r, mem memory, int *b)
 {
 
-	int		PC = 0,	n = 0, a = 0;
+	int		n = 0, a = 0;
 	char		type      [10];
 	strcpy(type, "WORD");
-	PC = getRegisterValue(r, 32);
 	//adresse
-		// DEBUG_MSG("PC %08x", PC);
-	if (IsInText(memory, PC) == -1) {
+	if (IsInText(memory, r->reg[32]) == -1) {
 		WARNING_MSG("Not in seg text  : Pc now initialized to .text start");
-		setRegisterValue(r,32,0x3000); //TODO mettre debut de seg.text au lieu de 0x3000
+		setRegisterValue(r,32,memory->seg[0].start._32); 
 		return CMD_WRONG_ARG;
 	}
 	char		hex       [50];
-	sprintf(hex, "%x", PC);
-	DEBUG_MSG("PC %08x", PC);
+	sprintf(hex, "%x", r->reg[32]);
+	DEBUG_MSG("PC %08x", r->reg[32]);
 	n = numero_segment(hex, memory);
 	if (-1 == n) {
 		WARNING_MSG("Mauvaise adresse %s", hex);
 		return CMD_WRONG_ARG;
 	}
 	uint32_t	u;
-	u = loadmem(PC, memory, type);
-	DEBUG_MSG("a %x il y a l'instruction  %32x\n", PC, u);
+	u = loadmem(r->reg[32], memory, type);
+	DEBUG_MSG("a %x il y a l'instruction  %32x\n", r->reg[32], u);
 	a = execute_asm(u, r, memory);
 	//renvois 200 si syscall
 		if (syscall(r, memory, a, b) == 10) {
