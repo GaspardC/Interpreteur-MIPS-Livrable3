@@ -18,7 +18,7 @@
 		Commande load
 \********************************************/
 int
-loadcmd(interpreteur inter, mem * memory)
+loadcmd(interpreteur inter, mem * memory, registre r)
 {
 	char           *section_names[NB_SECTIONS] =
 	{TEXT_SECTION_STR, RODATA_SECTION_STR, DATA_SECTION_STR,
@@ -101,10 +101,9 @@ loadcmd(interpreteur inter, mem * memory)
 		vaddr va;
 		va._32=0xff7ff000;
 		fill_mem_scn(*memory, stack_name, v, va, section );
+		r->reg[29]=0xffffeffc;
 
 
-
-	
 
 		del_stab(symtab);
 		fclose(pf_elf);

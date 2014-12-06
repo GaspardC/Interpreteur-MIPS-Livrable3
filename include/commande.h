@@ -35,7 +35,7 @@
 
 int dispcmd(interpreteur inter,  registre r,mem memory); // ajouter vm virt en argument
 int setcmd(interpreteur inter,  registre r,mem memory);
-int loadcmd(interpreteur inter, mem* memory);
+int loadcmd(interpreteur inter, mem* memory, registre r);
 int assertcmd(interpreteur inter,  registre r, mem memory);
 void debugcmd(interpreteur inter);
 void resumecmd(interpreteur inter);

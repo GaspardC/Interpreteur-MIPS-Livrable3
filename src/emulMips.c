@@ -332,7 +332,7 @@ int execute_cmd(interpreteur inter, registre r,mem *memory,bp * bpa) {
     }
 
     else if(strcmp(token, "load") == 0) {
-        return loadcmd(inter,memory);
+        return loadcmd(inter,memory,r);
     }
 
     else if(strcmp(token, "assert") == 0) {
