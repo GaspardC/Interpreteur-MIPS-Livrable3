@@ -172,6 +172,11 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
         //------------------------------------------------------
 
         //TODO : faire la relocation ICI !
+        int i;
+        for(i=0;i<scnsz/sizeof(*rel);i++)
+        {
+            INFO_MSG("%x %x",rel[i].r_offset, rel[i].r_info);
+        }
 
         //------------------------------------------------------
 
