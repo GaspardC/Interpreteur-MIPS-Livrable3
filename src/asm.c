@@ -399,7 +399,7 @@ int loadmem(uint32_t vAddr, mem memory, char* type)
 		{
 			n=i;
 		}
-	printf("%x %x %x\n",memory->seg[i].start._32, vAddr,memory->seg[i].start._32+memory->seg[i].size._32);
+	//printf("%x %x %x\n",memory->seg[i].start._32, vAddr,memory->seg[i].start._32+memory->seg[i].size._32);
 			
 	}
 	if(n==-1)

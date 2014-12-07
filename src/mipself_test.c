@@ -22,6 +22,8 @@
 #include "elf/syms.h"
 #include "mem.h"
 #include "elf/relocator.h"
+#include "asm.h"
+#include "lib.h"
 
 // On fixe ici une adresse basse dans la mémoire virtuelle. Le premier segment
 // ira se loger à cette adresse.
@@ -183,6 +185,15 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             INFO_MSG("offset :%x sym:%x -> %s type:%x -> %s", offset, sym, symtab.sym[sym].name, type, MIPS32_REL[type]);
             
             //stab32_print( symtab );
+            
+            //extraction du mot
+            uint32_t addr = seg.start._32 + offset;
+            uint32_t word = loadmem(addr,memory,"WORD");
+            INFO_MSG("%x",addr);
+            //FLIP_ENDIANNESS(word);
+            
+            uint32_t V,A,S,P;
+            
             switch(type)
             {
             	case R_MIPS_32 :
@@ -190,7 +201,13 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             	break;
             	
             	case R_MIPS_26 :
-            	
+            	    A=getbits(word,0,25);
+            	    P=addr;
+            	    S=memory->seg[sym-1].start._32;
+            	    V=((A<<2)|((P & 0xF0000000)+S))>>2; // cas STT_SECTION   
+            	    word=((word&0xfc000000)>>26)|(V&0x03ffffff);
+            	    //FLIP_ENDIANNESS(word);
+            	    storemem(addr,word,memory,"WORD");
             	break;
             	
             	case R_MIPS_HI16 :
@@ -205,6 +222,8 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             	
             	break;
             }
+            
+            
         }
 
         //------------------------------------------------------
