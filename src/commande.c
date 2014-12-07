@@ -71,14 +71,18 @@ loadcmd(interpreteur inter, mem * memory, registre r)
 			j = 0;
 		for (i = 0; i < NB_SECTIONS; i++) {
 			if (is_in_symbols(section_names[i], symtab)) {
-				elf_load_section_in_memory(pf_elf, *memory, section_names[i],segment_permissions[i],next_segment_start);
+				elf_load_section_in_memory(pf_elf, *memory, section_names[i],segment_permissions[i],next_segment_start);	
 				next_segment_start += (((*memory)->seg[j].size._32 + 0x1000) >> 12) << 12;
 				//on arrondit au 1 k supp Ã ©rieur
 				//print_segment_raw_content(&(*memory)->seg[j]);
 				j++;
 			}
 		}
-
+		
+		for (i = 0; i < NB_SECTIONS; i++) {
+			reloc_segment(pf_elf, (*memory)->seg[i], *memory,endianness,symtab);
+		}
+		
 		/* arguments : memomry, scn=STACK_SECTION, RW, unsigned long long add_start =0xff7ff000; 
 		RW_=2;
 		fill_mem_scn(mem vm, char *name, vsize sz, vaddr start, byte * content);

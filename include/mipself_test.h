@@ -7,6 +7,7 @@ int is_in_symbols(char* name, stab symtab);
 unsigned int get_nsegments(stab symtab,char* section_names[],int nb_sections);
 int elf_load_section_in_memory(FILE* fp, mem memory, char* scn,unsigned int permissions,unsigned long long add_start);
 void print_segment_raw_content(segment* seg);
+void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,stab symtab);
 
 
 #endif
