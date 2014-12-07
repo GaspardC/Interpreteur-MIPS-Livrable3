@@ -180,12 +180,13 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             FLIP_ENDIANNESS(rel[i].r_info);
             uint32_t sym = ELF32_R_SYM(rel[i].r_info);
             unsigned char type= ELF32_R_TYPE(rel[i].r_info);
-            INFO_MSG("offset :%x sym:%x type:%x -> %s\n", offset, sym, type, MIPS32_REL[type]);
+            INFO_MSG("offset :%x sym:%x -> %s type:%x -> %s", offset, sym, symtab.sym[sym].name, type, MIPS32_REL[type]);
             
+            //stab32_print( symtab );
             switch(type)
             {
             	case R_MIPS_32 :
-            	
+            	    
             	break;
             	
             	case R_MIPS_26 :
