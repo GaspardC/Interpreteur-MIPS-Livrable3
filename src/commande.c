@@ -79,9 +79,11 @@ loadcmd(interpreteur inter, mem * memory, registre r)
 			}
 		}
 		
-		for (i = 0; i < NB_SECTIONS; i++) {
+		//--------- RELOCATION -----------
+		for (i = 0; i < nsegments-1; i++) {
 			reloc_segment(pf_elf, (*memory)->seg[i], *memory,endianness,symtab);
 		}
+		//--------------------------------
 		
 		/* arguments : memomry, scn=STACK_SECTION, RW, unsigned long long add_start =0xff7ff000; 
 		RW_=2;

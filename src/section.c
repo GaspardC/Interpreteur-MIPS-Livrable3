@@ -23,7 +23,7 @@ scntab new_scntab( uint size ) {
 
     scntab.size = size;
 
-    printf(" size scntab %u\n", scntab.size);
+    //printf(" size scntab %u\n", scntab.size);
 
     scntab.scn  = malloc( scntab.size*sizeof( *(scntab.scn) ) );
 

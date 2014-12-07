@@ -156,7 +156,7 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
     // on recompose le nom de la section
     memcpy(reloc_name,RELOC_PREFIX_STR,strlen(RELOC_PREFIX_STR)+1);
     strcat(reloc_name,seg.name);
-
+    
     // on récupere le tableau de relocation et la table des sections
     rel = (Elf32_Rel *)elf_extract_scn_by_name( ehdr, fp, reloc_name, &scnsz, NULL );
     elf_load_scntab(fp ,32, &section_tab);
