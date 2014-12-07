@@ -175,7 +175,35 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
         int i;
         for(i=0;i<scnsz/sizeof(*rel);i++)
         {
-            INFO_MSG("%x %x",rel[i].r_offset, rel[i].r_info);
+            FLIP_ENDIANNESS(rel[i].r_offset);
+            uint32_t offset = rel[i].r_offset;
+            FLIP_ENDIANNESS(rel[i].r_info);
+            uint32_t sym = ELF32_R_SYM(rel[i].r_info);
+            unsigned char type= ELF32_R_TYPE(rel[i].r_info);
+            INFO_MSG("offset :%x sym:%x type:%x -> %s\n", offset, sym, type, MIPS32_REL[type]);
+            
+            switch(type)
+            {
+            	case R_MIPS_32 :
+            	
+            	break;
+            	
+            	case R_MIPS_26 :
+            	
+            	break;
+            	
+            	case R_MIPS_HI16 :
+            	
+            	break;
+            	
+            	case R_MIPS_LO16 :
+            	
+            	break;
+            	
+            	default :
+            	
+            	break;
+            }
         }
 
         //------------------------------------------------------
