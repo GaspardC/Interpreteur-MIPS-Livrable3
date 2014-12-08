@@ -744,7 +744,7 @@ int elf_load_scntab( FILE *fp, unsigned int width, scntab *scntab ) {
             }
 
             *scntab = new_scntab( nscns );
-	    
+
             for ( i= 0; i< nscns; i++ ) {
                 scntab->scn[i].name = strdup( &scnname[elf_shdr[i].sh_name] );
                 scntab->scn[i].addr._32 = elf_shdr[i].sh_addr;
@@ -755,7 +755,7 @@ int elf_load_scntab( FILE *fp, unsigned int width, scntab *scntab ) {
             free( scnname );
 
             /*
-            print_scntab(*scntab );
+            print_scntab(scntab );
             */
             return 0;
         } /* has shdr */
