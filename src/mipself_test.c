@@ -189,7 +189,7 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             //extraction du mot
             uint32_t addr = seg.start._32 + offset;
             uint32_t word = loadmem(addr,memory,"WORD");
-            INFO_MSG("%x",addr);
+            
             //FLIP_ENDIANNESS(word);
             
             uint32_t V,A,S,P;
@@ -201,13 +201,14 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             	break;
             	
             	case R_MIPS_26 :
+            	
             	    A=getbits(word,0,25);
             	    P=addr;
-            	    S=memory->seg[sym-1].start._32;
-            	    V=((A<<2)|((P & 0xF0000000)+S))>>2; // cas STT_SECTION   
-            	    word=((word&0xfc000000)>>26)|(V&0x03ffffff);
-            	    //FLIP_ENDIANNESS(word);
-            	    storemem(addr,word,memory,"WORD");
+            	    S=memory->seg[sym-1].start._32;           	    
+            	    V=((A<<2)|((P & 0xF0000000)+S))>>2; // cas STT_SECTION  
+            	    INFO_MSG("P (adresse) : %x A : %x S: %x -> V : %x",addr,A,S,V);    	     
+            	    word=((word&0xfc000000))|(V&0x03ffffff);
+            	    
             	break;
             	
             	case R_MIPS_HI16 :
@@ -223,7 +224,7 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             	break;
             }
             
-            
+            storemem(addr,word,memory,"WORD");
         }
 
         //------------------------------------------------------
