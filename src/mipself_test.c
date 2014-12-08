@@ -197,7 +197,9 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             //extraction du mot
             uint32_t addr = seg.start._32 + offset;
             uint32_t word = loadmem(addr,memory,"WORD");            
-            uint32_t V=0,A=0,S=0,P=0;
+            uint32_t V=0,A=0,S=0,P=0,AHL=0;
+            uint16_t AHI=0, ALO=0;
+
             
             switch(type)
             {
@@ -215,7 +217,7 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             	
             	    A=getbits(word,0,25);
             	    P=addr;
-            	              	    
+            	    S=memory->seg[sym-1].start._32;            	              	    
             	    V=((A<<2)|((P & 0xF0000000)+S))>>2; // cas STT_SECTION  
             	    INFO_MSG("P (adresse) : %x  A : %x  S: %x -> V : %x",addr,A,S,V);    	     
             	    word=((word&0xfc000000))|(V&0x03ffffff);
@@ -223,15 +225,29 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             	break;
             	
             	case R_MIPS_HI16 :
-            	
+            	    
+            	    AHI=((0x0000ffff & word)>>16);
+            	    ALO=0x0000ffff & loadmem(addr+4,memory,"WORD");
+            	    AHL=(AHI<<16)+(short)(ALO);
+            	    S=memory->seg[sym-1].start._32;
+            	    V=(AHL+S-(short)(AHL+S))>>16;
+            	    word=((word&0xffff0000))|(V&0x0000ffff);
+            	    
             	break;
             	
             	case R_MIPS_LO16 :
-            	
+            	    
+            	    AHI=((0x0000ffff & loadmem(addr-4,memory,"WORD"))>>16);
+            	    ALO=0x0000ffff & word;
+            	    AHL=(AHI<<16)+(short)(ALO);
+            	    S=memory->seg[sym-1].start._32;
+            	    V=AHL+S;
+            	    word=((word&0xffff0000))|(V&0x0000ffff);
+            	    
             	break;
             	
             	default :
-            	
+            	    WARNING_MSG("Relocation %s non prise en charge",MIPS32_REL[type]);
             	break;
             }
             
