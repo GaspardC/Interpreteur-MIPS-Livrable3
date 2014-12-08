@@ -95,6 +95,12 @@ loadcmd(interpreteur inter, mem * memory, registre r)
 		byte *ehdr;
 		//ehdr= calloc(0x800000,sizeof(uint32_t));
 		ehdr = malloc( sizeof( Elf32_Ehdr ) );
+
+		if (ehdr == NULL) { /* On vérifie que le système n'a pas renvoyé un pointeur nul. */
+     puts("ERREUR : probleme de memoire.");
+	 exit(EXIT_FAILURE);
+		}
+
 		char stack_name[20];
 		strcpy(stack_name,".stack");
 		attach_scn_to_mem(*memory, stack_name, SCN_ATTR( WIDTH_FROM_EHDR(ehdr) , RW_));
@@ -108,12 +114,8 @@ loadcmd(interpreteur inter, mem * memory, registre r)
 		va._32=0xff7ff000;
 		fill_mem_scn(*memory, stack_name, v, va, section );
 		r->reg[29]=0xffffeffc; //initialisation ra vers début de la stack.
-
-
-
 		del_stab(symtab);
 		fclose(pf_elf);
-
 		INFO_MSG("elf file load with success");
 		return CMD_OK_RETURN_VALUE;
 	}
