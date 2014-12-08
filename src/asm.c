@@ -378,7 +378,7 @@ int NextInstruction(uint32_t u,registre r,mem memory){
     (r->reg[32])+=4;
     u = loadmem(r->reg[32], memory,"WORD");
     execute_asm(u,r,memory);
-    DEBUG_MSG("C'est magnigique");
+    DEBUG_MSG("Delay slot utilisé");
     return 0;
 }
 

@@ -650,14 +650,9 @@ disasmcmd(interpreteur inter, mem memory)
 			return CMD_WRONG_ARG;
 		}
 		sscanf(addAI + inc, "%x", &b);
-		/*
-		 * char s[100]; strcat(s,"0x"); strcat(s,(char*)b);
-		 * 
-		 * if(numero_segment(s,memory)!=0) {DEBUG_MSG("out of .text");
-		 * return CMD_WRONG_ARG; }
-		 */
+
 		for (i = addAI; i < addAI + incI; i++) {
-			if (i - addAI == memory->seg[n].size._32) {
+			if (i - addAI > (memory->seg[n].size._32)-(addAI-memory->seg[n].start._32 )) {
 				break;
 			}
 			if (i % 4 == 0) {
