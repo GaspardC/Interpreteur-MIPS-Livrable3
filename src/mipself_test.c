@@ -21,9 +21,10 @@
 #include "elf/elf.h"
 #include "elf/syms.h"
 #include "mem.h"
-#include "elf/relocator.h"
+//#include "elf/relocator.h"
 #include "asm.h"
 #include "lib.h"
+ #include "mipself_test.h"
 
 // On fixe ici une adresse basse dans la mémoire virtuelle. Le premier segment
 // ira se loger à cette adresse.
