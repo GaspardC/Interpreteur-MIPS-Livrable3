@@ -204,11 +204,12 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             switch(type)
             {
             	case R_MIPS_32 :
-            	
+            	   
+                    P=addr;
             	    A=word;
             	    S=memory->seg[sym-1].start._32;
             	    V=S+A;
-            	    INFO_MSG("P (adresse) : %x  A : %x  S: %x -> V : %x",addr,A,S,V);
+            	    INFO_MSG("P (adresse) : %x  A : %x  S: %x -> V : %x",P,A,S,V);
             	    word=V;
             	    
             	break;
