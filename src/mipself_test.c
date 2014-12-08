@@ -168,7 +168,7 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
 
     if (rel != NULL &&seg.content!=NULL && seg.size._32!=0) {
 
-        INFO_MSG("--------------Relocation de %s-------------------\n",seg.name) ;
+        INFO_MSG("--------------Relocation de %s-------------------",seg.name) ;
         INFO_MSG("Nombre de symboles a reloger: %ld\n",scnsz/sizeof(*rel)) ;
 
 
@@ -183,32 +183,36 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             FLIP_ENDIANNESS(rel[i].r_info);
             uint32_t sym = ELF32_R_SYM(rel[i].r_info);
             unsigned char type= ELF32_R_TYPE(rel[i].r_info);
-            INFO_MSG("offset :%x sym:%x -> %s type:%x -> %s", offset, sym, symtab.sym[sym].name, type, MIPS32_REL[type]);
+            INFO_MSG("offset :%x | sym:%x -> %s | type:%x -> %s", offset, sym, symtab.sym[sym].name, type, MIPS32_REL[type]);
             
             //stab32_print( symtab );
             
             //extraction du mot
             uint32_t addr = seg.start._32 + offset;
-            uint32_t word = loadmem(addr,memory,"WORD");
-            INFO_MSG("%x",addr);
-            //FLIP_ENDIANNESS(word);
-            
+            uint32_t word = loadmem(addr,memory,"WORD");            
             uint32_t V,A,S,P;
             
             switch(type)
             {
             	case R_MIPS_32 :
+            	
+            	    A=word;
+            	    S=memory->seg[sym-1].start._32;
+            	    V=S+A;
+            	    INFO_MSG("P (adresse) : %x  A : %x  S: %x -> V : %x",addr,A,S,V);
+            	    word=V;
             	    
             	break;
             	
             	case R_MIPS_26 :
+            	
             	    A=getbits(word,0,25);
             	    P=addr;
-            	    S=memory->seg[sym-1].start._32;
-            	    V=((A<<2)|((P & 0xF0000000)+S))>>2; // cas STT_SECTION   
-            	    word=((word&0xfc000000)>>26)|(V&0x03ffffff);
-            	    //FLIP_ENDIANNESS(word);
-            	    storemem(addr,word,memory,"WORD");
+            	              	    
+            	    V=((A<<2)|((P & 0xF0000000)+S))>>2; // cas STT_SECTION  
+            	    INFO_MSG("P (adresse) : %x  A : %x  S: %x -> V : %x",addr,A,S,V);    	     
+            	    word=((word&0xfc000000))|(V&0x03ffffff);
+            	    
             	break;
             	
             	case R_MIPS_HI16 :
@@ -224,7 +228,7 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             	break;
             }
             
-            
+            storemem(addr,word,memory,"WORD");
         }
 
         //------------------------------------------------------
