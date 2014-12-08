@@ -107,7 +107,7 @@ loadcmd(interpreteur inter, mem * memory, registre r)
 		vaddr va;
 		va._32=0xff7ff000;
 		fill_mem_scn(*memory, stack_name, v, va, section );
-		r->reg[29]=0xffffeffc;
+		r->reg[29]=0xffffeffc; //initialisation ra vers début de la stack.
 
 
 

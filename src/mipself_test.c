@@ -21,7 +21,7 @@
 #include "elf/elf.h"
 #include "elf/syms.h"
 #include "mem.h"
-//#include "elf/relocator.h"
+#include "elf/relocator.h"
 #include "asm.h"
 #include "lib.h"
  #include "mipself_test.h"
@@ -162,11 +162,18 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
     
     // on récupere le tableau de relocation et la table des sections
     rel = (Elf32_Rel *)elf_extract_scn_by_name( ehdr, fp, reloc_name, &scnsz, NULL );
+    
+    /*int i=0;
+    while(rel[i].r_info!=0){
+        INFO_MSG("rel[i].info %32x" ,rel[i].r_info);
+        INFO_MSG("rel[i].offset %32x", rel[i].r_offset);
+        i++;
+    }
+    i=0;*/
+
     elf_load_scntab(fp ,32, &section_tab);
 
-
-
-    if (rel != NULL &&seg.content!=NULL && seg.size._32!=0) {
+    if (rel != 0 &&seg.content!=NULL && seg.size._32!=0) {
 
         INFO_MSG("--------------Relocation de %s-------------------",seg.name) ;
         INFO_MSG("Nombre de symboles a reloger: %ld\n",scnsz/sizeof(*rel)) ;
@@ -190,7 +197,7 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             //extraction du mot
             uint32_t addr = seg.start._32 + offset;
             uint32_t word = loadmem(addr,memory,"WORD");            
-            uint32_t V,A,S,P;
+            uint32_t V=0,A=0,S=0,P=0;
             
             switch(type)
             {
