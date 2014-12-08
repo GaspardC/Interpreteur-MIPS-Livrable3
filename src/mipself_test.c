@@ -217,7 +217,7 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             	
             	case R_MIPS_HI16 :
             	    
-            	    AHI=((0xffff0000 & word)>>16);
+            	    AHI=((0x0000ffff & word)>>16);
             	    ALO=0x0000ffff & loadmem(addr+4,memory,"WORD");
             	    AHL=(AHI<<16)+(short)(ALO);
             	    S=memory->seg[sym-1].start._32;
@@ -228,7 +228,7 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             	
             	case R_MIPS_LO16 :
             	    
-            	    AHI=((0xffff0000 & loadmem(addr-4,memory,"WORD"))>>16);
+            	    AHI=((0x0000ffff & loadmem(addr-4,memory,"WORD"))>>16);
             	    ALO=0x0000ffff & word;
             	    AHL=(AHI<<16)+(short)(ALO);
             	    S=memory->seg[sym-1].start._32;
