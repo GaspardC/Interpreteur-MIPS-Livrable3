@@ -172,6 +172,7 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
     i=0;*/
 
     elf_load_scntab(fp ,32, &section_tab);
+    
 
     if (rel != 0 &&seg.content!=NULL && seg.size._32!=0) {
 

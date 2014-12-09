@@ -30,11 +30,11 @@ loadcmd(interpreteur inter, mem * memory, registre r)
 	unsigned int	type_machine;
 	unsigned int	endianness;
 	//little ou big endian
-		unsigned int	bus_width;
+	unsigned int	bus_width;
 	//32 bits ou 64 bits
-		unsigned int	next_segment_start = START_MEM;
+	unsigned int	next_segment_start = START_MEM;
 	//compteur pour designer le d Ã ©but de la prochaine section
-		char           *chaine = NULL;
+	char           *chaine = NULL;
 
 	if ((chaine = get_next_token(inter)) != NULL) {
 
@@ -57,9 +57,11 @@ loadcmd(interpreteur inter, mem * memory, registre r)
 			next_segment_start = ((addr) >> 12) << 12;
 		}
 		//recuperation des info de l 'architecture
-			elf_get_arch_info(pf_elf, &type_machine, &endianness, &bus_width);
+		elf_get_arch_info(pf_elf, &type_machine, &endianness, &bus_width);
 		//et des symboles
-			elf_load_symtab(pf_elf, bus_width, endianness, &symtab);
+		elf_load_symtab(pf_elf, bus_width, endianness, &symtab);
+		
+		//stab32_print(symtab);
 
 
 		nsegments = get_nsegments(symtab, section_names, NB_SECTIONS);
@@ -78,6 +80,7 @@ loadcmd(interpreteur inter, mem * memory, registre r)
 				j++;
 			}
 		}
+		
 		
 		//--------- RELOCATION -----------
 		for (i = 0; i < nsegments-1; i++) {
@@ -775,8 +778,8 @@ run(interpreteur inter, registre r, mem memory, bp bp)
 	
 	if(IsInText(memory,a)==-1){ //si on est a la fin de .text
 	INFO_MSG("run done STOP!");
-//On peut remettre Pc a 3000 pour re run apres direct
-		setRegisterValue(r, 32, memory->seg[0].start._32);}
+	//On peut remettre Pc a 3000 pour re run apres direct
+	setRegisterValue(r, 32, memory->seg[0].start._32);}
 	return CMD_OK_RETURN_VALUE;
 
 }
