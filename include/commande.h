@@ -42,6 +42,7 @@ void resumecmd(interpreteur inter);
 int numero_segment(char* chaine,mem memory);
 int disasmcmd(interpreteur inter, mem memory);
 int step(interpreteur inter,registre r, mem memory, int* b);
+int True_step(interpreteur inter, registre r, mem memory, int *b);
 int run(interpreteur inter,registre r, mem memory, bp bp);
 int syscall ( registre r,mem memory, int a, int* b);
 bp check_bp(bp breakpoint,int PC);
@@ -52,5 +53,6 @@ bp ajouter_en_tete(bp bp,char* token, mem memory);
 void print_list(bp bp0);
 bp find_by_add(bp bpa,char *token);
 int IsInText(mem memory,int i);
+
 
 #endif

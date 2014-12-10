@@ -726,7 +726,6 @@ disasmcmd(interpreteur inter, mem memory)
 int
 run(interpreteur inter, registre r, mem memory, bp bp)
 {
-
 	
 	if (memory == NULL) {
 		WARNING_MSG("elf file required !!!\n");
@@ -810,7 +809,7 @@ check_bp(bp breakpoint, int PC)
 
 
 /********************************************\
-	Fonction step
+	Fonction step =stepinto
 \********************************************/
 
 int
@@ -846,6 +845,14 @@ step(interpreteur inter, registre r, mem memory, int *b)
 	return CMD_OK_RETURN_VALUE;
 
 }
+/********************************************\
+	Fonction True_step (l'autre step est un step into en réalité)
+\********************************************/
+
+int
+True_step(interpreteur inter, registre r, mem memory, int *b)
+{
+}
 
 int
 syscall(registre r, mem memory, int a, int *b)
@@ -860,7 +867,8 @@ syscall(registre r, mem memory, int a, int *b)
 		//exit
 	{
 		INFO_MSG("Fin d'execution");
-		int		PC = 0x3000;
+		//int		PC = 0x3000;
+		int PC = memory->seg[0].start._32;
 		//pas oblig é mais on se remet au debut de.text // TODO remplacer le 0x3000 par mem->seg[n]->start._32
 			setRegisterValue(r, 32, PC);
 		*b = 10;
