@@ -939,7 +939,7 @@ syscall(registre r, mem memory, int a, int *b)
 		INFO_MSG("Fin d'execution");
 		//int		PC = 0x3000;
 		int PC = memory->seg[0].start._32;
-		//pas oblig é mais on se remet au debut de.text // TODO remplacer le 0x3000 par mem->seg[n]->start._32
+		//pas oblig é mais on se remet au debut de.text 
 			setRegisterValue(r, 32, PC);
 		*b = 10;
 		//ca va couper le while (b == 1)
@@ -947,16 +947,29 @@ syscall(registre r, mem memory, int a, int *b)
 	}
 	if (v0 == 1) {
 		//afficher un entier sur la sortie standard
-			int		a0 = getRegisterValue(r, 4);
+		int		a0 = getRegisterValue(r, 4);
 		INFO_MSG("affichage syscall sur l'entree standard");
 		printf("%d\n", a0);
 		return 1;
 	}
+	if (v0 == 5) {
+		int a=0;
+		//lire en entier sur l'entrée standard
+		INFO_MSG("lire un entier l'entree standard");
+		scanf("%d",&a);
+		r->reg[2]=a;
+		return 1;
+	}
 	if (v0 == 4) {
-		//affichage chaine de caractere
+		//affichage chaine de caractere avec $a0 adresse de la chaine
 			int		a0 = getRegisterValue(r, 4);
 		//TODO aller verifier que on est dans.data puis lire a l 'adresse a0-start de data
-			char           *s = NULL;
+			
+			char s[100];
+  			uint32_t b = *(memory->seg[1].content + (a0 - memory->seg[1].start._64));
+			sprintf(s,"%x",b);
+			printf("%s\n",s );
+
 		INFO_MSG("affichage par adresse de syscall sur l'entree standard");
 		printf("%s %d\n", s, a0);
 		//j 'ai mis a0 juste pour enlever els Warnings en attendant de le faire propre
@@ -964,11 +977,14 @@ syscall(registre r, mem memory, int a, int *b)
 	}
 	if (8 == v0) {
 		//lire une chaine sur l 'entrée standard
-			int		a1 = getRegisterValue(r, 5);
-		int		a0 = getRegisterValue(r, 4);
-		//TODO aller verifier que on est dans.data puis lire a l 'adresse a0-start de data
-			char		s         [a1];
-		scanf("%s %d %d", s, &a0, &a1);
+			int		a1 = getRegisterValue(r, 5); // taille du buffer
+			int		a0 = getRegisterValue(r, 4); // adresse ou ecrire
+			uint32_t s2;
+			char	s         [a1];
+			fgets(s,a1,stdin);
+			sscanf(s,"%x",&s2);
+			*(memory->seg[1].content + (a0 - memory->seg[1].start._64))=s2;
+			printf("%s\n",s );
 		//j 'ai mis &a0 et &a1 juste pour enlever les warnings en attendant
 			INFO_MSG("Lire une chaine par syscall sur l'entree standard");
 		return 8;
