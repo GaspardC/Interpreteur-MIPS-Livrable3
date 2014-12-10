@@ -835,7 +835,7 @@ step(interpreteur inter, registre r, mem memory, int *b)
 	}
 	uint32_t	u;
 	u = loadmem(r->reg[32], memory, type);
-	DEBUG_MSG("a %x il y a l'instruction  %32x\n", r->reg[32], u);
+	DEBUG_MSG("en %x il y a l'instruction  %s\n", r->reg[32], getInstr(u));
 	a = execute_asm(u, r, memory);
 	//renvois 200 si syscall
 		if (syscall(r, memory, a, b) == 10) {
@@ -849,10 +849,42 @@ step(interpreteur inter, registre r, mem memory, int *b)
 	Fonction True_step (l'autre step est un step into en réalité)
 \********************************************/
 
-int
-True_step(interpreteur inter, registre r, mem memory, int *b)
+int True_step(interpreteur inter, registre r, mem memory, int *b, bp bpa)
 {
-}
+	uint32_t	u;
+	u = loadmem(r->reg[32], memory, "WORD");
+	//int type=0;
+
+
+	//si u differént d'un type de Jump on step
+
+	/*On parcours le programme on trouve les types jumps 
+	On recupére les adresses de retour
+	On set un breakpoint special a ces adresses de retour (=entete fonction)
+	on step normal sauf si on voit un breakpoint special
+		dans ce cas on step jusqu'à ce que PC le PC initial sauvé +8
+
+	*/
+	//Si breakpoint
+	int a=r->reg[32]; //PC
+	if (NULL != check_bp(bpa, a)) {
+		printf("Breakpoint en %x STOP PC = %x\n", a,a);
+		//a+=4; //juste pour pouvoir faire un autre run apres le stop
+		//setRegisterValue(r,32,a);
+		
+
+		while((a+8)!=r->reg[32]){
+			step(inter,r,memory,b);
+		}
+		return CMD_OK_RETURN_VALUE;
+		}
+	//sinon on step normale
+	else {
+		DEBUG_MSG("step 'NORMAL'");
+		step(inter,r,memory,b);
+		return CMD_OK_RETURN_VALUE;}	
+
+}		
 
 int
 syscall(registre r, mem memory, int a, int *b)
@@ -1024,7 +1056,7 @@ find_by_add(bp bpa, char *token)
 	bp		bpb;
 	bpb = bpa;
 	if (bpa == NULL) {
-		DEBUG_MSG("no breakpoints to match");
+		//DEBUG_MSG("no breakpoints to match");
 		return NULL;
 	}
 	/*

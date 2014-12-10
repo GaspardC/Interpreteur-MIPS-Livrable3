@@ -341,7 +341,7 @@ int execute_asm(uint32_t u, registre r, mem memory)
 	return storemem(vAddr,word,memory,"WORD");
     }
     
-    else if(strcmp(instr,"SYSCALL")==0) {
+    else if(strcmp(instr,"SYSCALL")==0) { INFO_MSG("SYSCALL de v0 %d",r->reg[2]);
         if(r->reg[2]==10) {
             INFO_MSG("Fin du programme");
             return 10;

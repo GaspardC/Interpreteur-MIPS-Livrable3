@@ -42,7 +42,7 @@ void resumecmd(interpreteur inter);
 int numero_segment(char* chaine,mem memory);
 int disasmcmd(interpreteur inter, mem memory);
 int step(interpreteur inter,registre r, mem memory, int* b);
-int True_step(interpreteur inter, registre r, mem memory, int *b);
+int True_step(interpreteur inter, registre r, mem memory, int *b,bp bpa);
 int run(interpreteur inter,registre r, mem memory, bp bp);
 int syscall ( registre r,mem memory, int a, int* b);
 bp check_bp(bp breakpoint,int PC);
