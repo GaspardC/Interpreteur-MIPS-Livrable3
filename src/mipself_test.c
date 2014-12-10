@@ -44,7 +44,7 @@
 // Fonction permettant de verifier si une chaine de caracteres
 // est bien dans la liste des symboles du fichier ELF
 // parametres :
-// 		name : le nom de la chaine recherchée
+//      name : le nom de la chaine recherchée
 //  symtab : la table des symboles
 //
 // retourne 1 si present, 0 sinon
@@ -204,85 +204,85 @@ void reloc_segment(FILE* fp, segment seg, mem memory,unsigned int endianness,sta
             
             switch(type)
             {
-            	case R_MIPS_32 :
-            	    
-            	    if(symtab.sym[sym].type==STT_SECTION) {
-            	        S=memory->seg[sym-1].start._32;
-            	    }
-            	    else {
-            	        WARNING_MSG("Relocation non prise en charge");
-            	        exit(EXIT_FAILURE);
-            	    }
-            	    
+                case R_MIPS_32 :
+                    
+                    if(symtab.sym[sym].type==STT_SECTION) {
+                        S=memory->seg[sym-1].start._32;
+                    }
+                    else {
+                        WARNING_MSG("Relocation non prise en charge");
+                        exit(EXIT_FAILURE);
+                    }
+                    
                     P=addr;
-            	    A=word;            	    
-            	    V=S+A;
-            	    
-            	    INFO_MSG("P (adresse) : %x  A : %x  S: %x -> V : %x",P,A,S,V);
-            	    word=V;
-            	    
-            	break;
-            	
-            	case R_MIPS_26 :
-            	    
-            	    if(symtab.sym[sym].type==STT_SECTION) {
-            	        S=memory->seg[sym-1].start._32;
-            	    }
-            	    else {
-            	        WARNING_MSG("Relocation non prise en charge");
-            	        exit(EXIT_FAILURE);
-            	    }
-            	    
-            	    A=getbits(word,0,25);
-            	    P=addr;           	              	    
-            	    V=((A<<2)|((P & 0xF0000000)+S))>>2; // cas STT_SECTION  
-            	    
-            	    INFO_MSG("P (adresse) : %x  A : %x  S: %x -> V : %x",addr,A,S,V);    	     
-            	    word=((word&0xfc000000))|(V&0x03ffffff);
-            	    
-            	break;
-            	
-            	case R_MIPS_HI16 :
-            	    
-            	    if(symtab.sym[sym].type==STT_SECTION) {
-            	        S=memory->seg[sym-1].start._32;
-            	    }
-            	    else {
-            	        WARNING_MSG("Relocation non prise en charge");
-            	        exit(EXIT_FAILURE);
-            	    }
-            	    
-            	    AHI=((0x0000ffff & word)>>16);
-            	    ALO=0x0000ffff & loadmem(addr+4,memory,"WORD");
-            	    AHL=(AHI<<16)+(short)(ALO);
-            	    V=(AHL+S-(short)(AHL+S))>>16;
-            	    
-            	    word=((word&0xffff0000))|(V&0x0000ffff);
-            	    
-            	break;
-            	
-            	case R_MIPS_LO16 :
-            	    
-            	    if(symtab.sym[sym].type==STT_SECTION) {
-            	        S=memory->seg[sym-1].start._32;
-            	    }
-            	    else {
-            	        WARNING_MSG("Relocation non prise en charge");
-            	        exit(EXIT_FAILURE);
-            	    }
-            	    
-            	    AHI=((0x0000ffff & loadmem(addr-4,memory,"WORD"))>>16);
-            	    ALO=0x0000ffff & word;
-            	    AHL=(AHI<<16)+(short)(ALO);
-            	    V=AHL+S;
-            	    
-            	    word=((word&0xffff0000))|(V&0x0000ffff);
-            	    
-            	break;
-            	
-            	default :
-            	    WARNING_MSG("Relocation %s non prise en charge",MIPS32_REL[type]);
-            	break;
+                    A=word;                 
+                    V=S+A;
+                    
+                    INFO_MSG("P (adresse) : %x  A : %x  S: %x -> V : %x",P,A,S,V);
+                    word=V;
+                    
+                break;
+                
+                case R_MIPS_26 :
+                    
+                    if(symtab.sym[sym].type==STT_SECTION) {
+                        S=memory->seg[sym-1].start._32;
+                    }
+                    else {
+                        WARNING_MSG("Relocation non prise en charge");
+                        exit(EXIT_FAILURE);
+                    }
+                    
+                    A=getbits(word,0,25);
+                    P=addr;                                 
+                    V=((A<<2)|((P & 0xF0000000)+S))>>2; // cas STT_SECTION  
+                    
+                    INFO_MSG("P (adresse) : %x  A : %x  S: %x -> V : %x",addr,A,S,V);            
+                    word=((word&0xfc000000))|(V&0x03ffffff);
+                    
+                break;
+                
+                case R_MIPS_HI16 :
+                    
+                    if(symtab.sym[sym].type==STT_SECTION) {
+                        S=memory->seg[sym-1].start._32;
+                    }
+                    else {
+                        WARNING_MSG("Relocation non prise en charge");
+                        exit(EXIT_FAILURE);
+                    }
+                    
+                    AHI=((0x0000ffff & word)>>16);
+                    ALO=0x0000ffff & loadmem(addr+4,memory,"WORD");
+                    AHL=(AHI<<16)+(short)(ALO);
+                    V=(AHL+S-(short)(AHL+S))>>16;
+                    
+                    word=((word&0xffff0000))|(V&0x0000ffff);
+                    
+                break;
+                
+                case R_MIPS_LO16 :
+                    
+                    if(symtab.sym[sym].type==STT_SECTION) {
+                        S=memory->seg[sym-1].start._32;
+                    }
+                    else {
+                        WARNING_MSG("Relocation non prise en charge");
+                        exit(EXIT_FAILURE);
+                    }
+                    
+                    AHI=((0x0000ffff & loadmem(addr-4,memory,"WORD"))>>16);
+                    ALO=0x0000ffff & word;
+                    AHL=(AHI<<16)+(short)(ALO);
+                    V=AHL+S;
+                    
+                    word=((word&0xffff0000))|(V&0x0000ffff);
+                    
+                break;
+                
+                default :
+                    WARNING_MSG("Relocation %s non prise en charge",MIPS32_REL[type]);
+                break;
             }
             
             storemem(addr,word,memory,"WORD");
@@ -311,8 +311,7 @@ void print_segment_raw_content(segment* seg) {
             if(k%16==0) printf("\n  0x%08x ",k);
             word = *((unsigned int *) (seg->content+k));
             FLIP_ENDIANNESS(word);
-            printf("%08x ",	word);
+            printf("%08x ", word);
         }
     }
 }
-

@@ -744,13 +744,13 @@ run(interpreteur inter, registre r, mem memory, bp bp)
 	 * qu'on commence à un mutliple de 4
 	 */
 	a = getRegisterValue(r, 32);
-	DEBUG_MSG("PC %s a %x", PC, a);
+	//DEBUG_MSG("PC %s a %x", PC, a);
 	sprintf(PC, "%x", a);
 	if ((token = get_next_token(inter)) != NULL) {
 		strcpy(PC, token);
 		sscanf(PC, "%x", &a);
 	}
-	//DEBUG_MSG("PC %s", PC);
+	DEBUG_MSG("PC %s", PC);
 	sscanf(PC, "%x", &a);
 	//DEBUG_MSG("PC %x", a);
 	a -= a % 4;
@@ -770,8 +770,11 @@ run(interpreteur inter, registre r, mem memory, bp bp)
 			setRegisterValue(r,32,a);
 			break;
 		}
-		step(inter, r, memory, &b);
+
+
+		stepinto(inter, r, memory, &b,&bp,2);
 	}
+	
 	a=getRegisterValue(r,32);
 
 	
@@ -780,6 +783,7 @@ run(interpreteur inter, registre r, mem memory, bp bp)
 	//On peut remettre Pc a 3000 pour re run apres direct
 	setRegisterValue(r, 32, memory->seg[0].start._32);}
 	return CMD_OK_RETURN_VALUE;
+
 
 }
 
@@ -812,9 +816,33 @@ check_bp(bp breakpoint, int PC)
 	Fonction step =stepinto
 \********************************************/
 
-int
-step(interpreteur inter, registre r, mem memory, int *b)
-{
+int stepinto(interpreteur inter, registre r, mem memory, int *b,bp *bpa, int z)
+{	char* token=NULL;
+	token=get_next_token(inter);
+
+	//z=1 appelle utilisateur z=2 appelle intriseque fonction
+
+	if(z==1){
+		if(token==NULL){
+		step(inter,r,memory, b, bpa);
+		return CMD_OK_RETURN_VALUE;
+	}
+	} 
+
+	
+	if(z==1){
+		if(strcmp(token,"into")==1){
+
+		WARNING_MSG("Utiliser la syntaxe step ou step into seulement");
+		return CMD_WRONG_ARG;
+	}
+    }
+
+	if (memory == NULL) {
+		WARNING_MSG("elf file required !!!\n");
+		return NO_ELF_LOAD;
+	}
+
 
 	int		n = 0, a = 0;
 	char		type      [10];
@@ -846,43 +874,53 @@ step(interpreteur inter, registre r, mem memory, int *b)
 
 }
 /********************************************\
-	Fonction True_step (l'autre step est un step into en réalité)
+	Fonction step (historiquement :  True_step (l'autre step est un step into en réalité))
 \********************************************/
 
-int True_step(interpreteur inter, registre r, mem memory, int *b, bp bpa)
-{
+int step(interpreteur inter, registre r, mem memory, int *b, bp* bpa)
+{	
+	if (memory == NULL) {
+		WARNING_MSG("elf file required !!!\n");
+		return NO_ELF_LOAD;
+	}
+		if (IsInText(memory, r->reg[32]) == -1) {
+		WARNING_MSG("Not in seg text  : Pc now initialized to .text start");
+		setRegisterValue(r,32,memory->seg[0].start._32); 
+		return CMD_WRONG_ARG;
+	}
+
 	uint32_t	u;
 	u = loadmem(r->reg[32], memory, "WORD");
-	//int type=0;
+	int type=0;
+	char name[20];
+	strcpy(name,getInstr(u));
+	char token[20];
 
+	WARNING_MSG("nom instr %s",name);
 
-	//si u differént d'un type de Jump on step
+	if(strcmp(name,"BEQ")==0 || strcmp(name,"BLEZ")==0 || strcmp(name,"BGTZ")==0 || strcmp(name,"BLEZ")==0 || strcmp(name,"BLTZ")==0 ||
+		strcmp(name,"J")==0 || strcmp(name,"JAL")==0 || strcmp(name,"JALR")==0 || strcmp(name,"JR")==0 )
+		{type=1;}
+	WARNING_MSG("type instr %d",type);
 
-	/*On parcours le programme on trouve les types jumps 
-	On recupére les adresses de retour
-	On set un breakpoint special a ces adresses de retour (=entete fonction)
-	on step normal sauf si on voit un breakpoint special
-		dans ce cas on step jusqu'à ce que PC le PC initial sauvé +8
+	if(type==0){return stepinto(inter, r, memory, b,bpa,2);}
 
-	*/
-	//Si breakpoint
-	int a=r->reg[32]; //PC
-	if (NULL != check_bp(bpa, a)) {
-		printf("Breakpoint en %x STOP PC = %x\n", a,a);
-		//a+=4; //juste pour pouvoir faire un autre run apres le stop
-		//setRegisterValue(r,32,a);
-		
-
-		while((a+8)!=r->reg[32]){
-			step(inter,r,memory,b);
-		}
+	// Si on a une instruction de saut cela veut dire qu'on va a une fonction donc on run jusqu'a PC+8
+	// Sauf si on a re un jump en faite pas important l'utilisateur avait qu'à faire un step normal
+	if (type==1){
+		sprintf(token,"%x",r->reg[32]+8);
+		 *bpa = ajouter_en_tete(*bpa, token,memory);
+		 WARNING_MSG("bp ajoute en %s",token);
+		run(inter,  r,  memory,*bpa);
+		*bpa=free_bp(*bpa,token);
 		return CMD_OK_RETURN_VALUE;
-		}
-	//sinon on step normale
+
+	}
+
 	else {
-		DEBUG_MSG("step 'NORMAL'");
-		step(inter,r,memory,b);
-		return CMD_OK_RETURN_VALUE;}	
+		DEBUG_MSG("Probleme de type");
+		return CMD_WRONG_ARG;
+	}	
 
 }		
 
@@ -1132,7 +1170,7 @@ ajouter_en_tete(bp bp0, char *token, mem memory)
 		return bp0;
 	}
 	
-		bp newbp = calloc(1, sizeof(*newbp));
+	bp newbp = calloc(1, sizeof(*newbp));
 	
 
 	newbp->addr._32 = a;

@@ -30,6 +30,7 @@
 #define RODATA_SECTION_STR ".rodata"
 #define DATA_SECTION_STR ".data"
 #define BSS_SECTION_STR ".bss"
+ #define PATH_TO_LIBC "./libc/libc.so"
 
 
 
@@ -41,8 +42,8 @@ void debugcmd(interpreteur inter);
 void resumecmd(interpreteur inter);
 int numero_segment(char* chaine,mem memory);
 int disasmcmd(interpreteur inter, mem memory);
-int step(interpreteur inter,registre r, mem memory, int* b);
-int True_step(interpreteur inter, registre r, mem memory, int *b,bp bpa);
+int stepinto(interpreteur inter,registre r, mem memory, int* b, bp *bpa,int z);
+int step(interpreteur inter, registre r, mem memory, int *b,bp *bpa);
 int run(interpreteur inter,registre r, mem memory, bp bp);
 int syscall ( registre r,mem memory, int a, int* b);
 bp check_bp(bp breakpoint,int PC);

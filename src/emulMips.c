@@ -353,8 +353,14 @@ int execute_cmd(interpreteur inter, registre r,mem *memory,bp * bpa) {
         return disasmcmd(inter,*memory);
     }
     else if (strcmp(token,"step")==0) {
-        return step(inter,r,*memory,&b);
+        return stepinto(inter,r,*memory,&b,bpa,1);
     }
+
+   /* else if (strcmp(token,"step")==0) {
+        return True_step(inter,r,*memory, &b, bpa);
+    }*/
+
+    
      else if (strcmp(token,"run")==0) {
          run(inter,r,*memory,*bpa);
          return CMD_OK_RETURN_VALUE;
